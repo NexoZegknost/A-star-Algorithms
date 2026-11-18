@@ -10,7 +10,7 @@ Deadline: **December 6th, 2026**.
 | M3 | Task 2 — AUV 3D navigation | `findAUVPath` + tests | Done |
 | M4 | Task 3 — Probabilistic hazard routing | `findProbabilisticPath` + tests | Done |
 | M5 | Task 4 — Game multi-terrain grid | `findGamePath` + tests | Done |
-| M6 | Task 5 — PCB wire routing | `findPCBPath` + tests | Pending |
+| M6 | Task 5 — PCB wire routing | `findPCBPath` + tests | Done |
 | M7 | Demo and packaging | `main.cpp`, `scripts/package.sh` | Pending |
 | M8 | Report | `report/<StudentID>.pdf` | Pending |
 

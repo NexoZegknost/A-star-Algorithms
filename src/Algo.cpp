@@ -246,6 +246,15 @@ std::vector<std::string> directionLabels(const GridShape& grid, const std::vecto
     return labels;
 }
 
+std::string coordinateLabel(const GridShape& grid, int cell) {
+    return "(" + std::to_string(grid.row(cell)) + "," + std::to_string(grid.col(cell)) + ")";
+}
+
+struct Wire {
+    int to;
+    int direction;
+};
+
 double terrainCost(int cell) {
     return cell == SWAMP ? 2.0 : 1.0;
 }
@@ -371,4 +380,67 @@ PathNode* findGamePath(int mapGrid[100][100], int m, int n, int startX, int star
     SearchResult result = search(graph, grid.id(startX, startY), grid.id(goalX, goalY));
     if (!result.found) return nullptr;
     return toLinkedList(result, graph, directionLabels(grid, result.nodes));
+}
+
+PathNode* findPCBPath(int pcbGrid[100][100], int m, int n, int startX, int startY,
+                      int exitX, int exitY, double weightMatrix[100][100], int mode) {
+    using namespace astar;
+    const double TRACE_UNIT = 1.0;
+    const double BEND_PENALTY = 0.5;
+    const int NO_DIRECTION = 4;
+    const int STATES_PER_CELL = 5;
+
+    for (int i = 0; i < MAX_NODES; ++i) {
+        for (int j = 0; j < MAX_NODES; ++j) weightMatrix[i][j] = 0.0;
+    }
+
+    Metric metric = metricFromMode(mode, MANHATTAN, CHEBYSHEV);
+    GridShape grid = {m, n};
+    if (metric == INVALID_METRIC || !grid.valid()) return nullptr;
+    if (!grid.contains(startX, startY) || !grid.contains(exitX, exitY)) return nullptr;
+
+    std::vector<std::vector<Wire> > wires(grid.cells());
+    for (int x = 0; x < m; ++x) {
+        for (int y = 0; y < n; ++y) {
+            if (pcbGrid[x][y] == OBSTACLE) continue;
+            int u = grid.id(x, y);
+            for (int d = 0; d < 4; ++d) {
+                int nx = x + DIRECTIONS[d].dx;
+                int ny = y + DIRECTIONS[d].dy;
+                if (!grid.contains(nx, ny) || pcbGrid[nx][ny] == OBSTACLE) continue;
+                int v = grid.id(nx, ny);
+                Wire wire = {v, d};
+                wires[u].push_back(wire);
+                if (u < MAX_NODES && v < MAX_NODES) weightMatrix[u][v] = TRACE_UNIT;
+            }
+        }
+    }
+    if (pcbGrid[startX][startY] == OBSTACLE || pcbGrid[exitX][exitY] == OBSTACLE) return nullptr;
+
+    Graph graph(grid.cells() * STATES_PER_CELL);
+    std::vector<bool> isGoal(graph.size(), false);
+    for (int u = 0; u < grid.cells(); ++u) {
+        double h = distance(metric, grid.row(u) - exitX, grid.col(u) - exitY);
+        for (int incoming = 0; incoming < STATES_PER_CELL; ++incoming) {
+            int state = u * STATES_PER_CELL + incoming;
+            graph.h[state] = h;
+            isGoal[state] = u == grid.id(exitX, exitY);
+            for (size_t i = 0; i < wires[u].size(); ++i) {
+                const Wire& wire = wires[u][i];
+                bool bends = incoming != NO_DIRECTION && incoming != wire.direction;
+                double cost = TRACE_UNIT + (bends ? BEND_PENALTY : 0.0);
+                graph.addEdge(state, wire.to * STATES_PER_CELL + wire.direction, cost);
+            }
+        }
+    }
+
+    int startState = grid.id(startX, startY) * STATES_PER_CELL + NO_DIRECTION;
+    SearchResult result = search(graph, startState, isGoal);
+    if (!result.found) return nullptr;
+
+    std::vector<std::string> labels;
+    for (size_t i = 0; i < result.nodes.size(); ++i) {
+        labels.push_back(coordinateLabel(grid, result.nodes[i] / STATES_PER_CELL));
+    }
+    return toLinkedList(result, graph, labels);
 }

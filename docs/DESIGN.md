@@ -57,3 +57,15 @@ heuristic value per vertex) and call `astar::search`.
 - Heuristic modes: `1` Manhattan, `2` Chebyshev. Chebyshev is admissible (every move lowers
   it by at most `1` and costs at least `1`); Manhattan can overestimate after a diagonal step.
 - Labels: the first node is `"Start"`, every following node carries the move that reached it.
+
+## Task 5 — PCB wire routing with bending penalty
+
+- Grid-to-graph: cell `(x, y)` becomes vertex `x · n + y`; every free cell (`pcbGrid ≠ 1`) is
+  linked to its free 4-neighbours with weight `1.0`. The full adjacency is written to
+  `weightMatrix` (cleared first; entries are filled when both ids are below `100`).
+- Direction state: the search runs on the expanded graph `(cell, incoming direction)` with five
+  states per cell (`Up`, `Down`, `Left`, `Right`, none at the start). A transition costs `1.0`
+  plus `B = 0.5` when its direction differs from the incoming one, so the bending penalty is a
+  plain edge weight and A* stays exact. Any state on the exit cell is a goal.
+- Heuristic modes: `1` Manhattan, `2` Chebyshev; both are admissible on a 4-connected grid.
+- Labels are coordinates `"(x,y)"`.
