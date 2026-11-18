@@ -7,7 +7,7 @@ Deadline: **December 6th, 2026**.
 | M0 | Repository scaffold | Layout, Makefile, header check, docs | Done |
 | M1 | Shared core | `PathNode`, binary-heap A* engine, heuristics | Done |
 | M2 | Task 1 — Mesh network routing | `findMeshPath` + tests | Done |
-| M3 | Task 2 — AUV 3D navigation | `findAUVPath` + tests | Pending |
+| M3 | Task 2 — AUV 3D navigation | `findAUVPath` + tests | Done |
 | M4 | Task 3 — Probabilistic hazard routing | `findProbabilisticPath` + tests | Pending |
 | M5 | Task 4 — Game multi-terrain grid | `findGamePath` + tests | Pending |
 | M6 | Task 5 — PCB wire routing | `findPCBPath` + tests | Pending |

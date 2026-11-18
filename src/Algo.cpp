@@ -143,6 +143,24 @@ double chebyshev(double dx, double dy, double dz = 0.0) {
     return std::max(std::fabs(dx), std::max(std::fabs(dy), std::fabs(dz)));
 }
 
+enum Metric { MANHATTAN, EUCLIDEAN, CHEBYSHEV, INVALID_METRIC };
+
+double distance(Metric metric, double dx, double dy, double dz = 0.0) {
+    switch (metric) {
+        case MANHATTAN: return manhattan(dx, dy, dz);
+        case EUCLIDEAN: return euclidean(dx, dy, dz);
+        case CHEBYSHEV: return chebyshev(dx, dy, dz);
+        default: return 0.0;
+    }
+}
+
+Metric metricFromMode(int mode, Metric mode1, Metric mode2, Metric mode3 = INVALID_METRIC) {
+    if (mode == 1) return mode1;
+    if (mode == 2) return mode2;
+    if (mode == 3) return mode3;
+    return INVALID_METRIC;
+}
+
 bool inRange(int value, int low, int high) {
     return value >= low && value < high;
 }
@@ -213,6 +231,30 @@ PathNode* findMeshPath(double weightMatrix[100][100], int startNode, int goalNod
     }
 
     SearchResult result = search(graph, startNode, goalNode);
+    if (!result.found) return nullptr;
+    return toLinkedList(result, graph, indexLabels(MAX_NODES));
+}
+
+PathNode* findAUVPath(double weightMatrix[100][100], int coords[100][3],
+                      int startPoint, int goalPoint, int mode) {
+    using namespace astar;
+    Metric metric = metricFromMode(mode, MANHATTAN, EUCLIDEAN, CHEBYSHEV);
+    if (metric == INVALID_METRIC) return nullptr;
+    if (!inRange(startPoint, 0, MAX_NODES) || !inRange(goalPoint, 0, MAX_NODES)) return nullptr;
+
+    Graph graph(MAX_NODES);
+    for (int u = 0; u < MAX_NODES; ++u) {
+        for (int v = 0; v < MAX_NODES; ++v) {
+            if (u == v || weightMatrix[u][v] <= 0) continue;
+            double depthChange = std::fabs(static_cast<double>(coords[v][2] - coords[u][2]));
+            graph.addEdge(u, v, weightMatrix[u][v] * (1.0 + depthChange / 100.0));
+        }
+        graph.h[u] = distance(metric, coords[u][0] - coords[goalPoint][0],
+                              coords[u][1] - coords[goalPoint][1],
+                              coords[u][2] - coords[goalPoint][2]);
+    }
+
+    SearchResult result = search(graph, startPoint, goalPoint);
     if (!result.found) return nullptr;
     return toLinkedList(result, graph, indexLabels(MAX_NODES));
 }

@@ -24,3 +24,12 @@ heuristic value per vertex) and call `astar::search`.
   and `c_min` the cheapest edge cost in the network. Every remaining path needs at least
   `hops(v)` edges costing at least `c_min`, so `h` is admissible and consistent.
 - Node labels are vertex indices (`"0"`, `"1"`, …).
+
+## Task 2 — AUV navigation in 3D
+
+- Edge `u → v` exists when `weightMatrix[u][v] > 0` and `u ≠ v`.
+- Step cost `w(u, v) · (1 + |z_v − z_u| / 100)`.
+- Heuristic modes: `1` Manhattan, `2` Euclidean, `3` Chebyshev on `(x, y, z)`; any other mode
+  returns `nullptr`.
+- The metrics are measured in coordinate units while costs are energy units, so admissibility
+  depends on the data; the engine re-opens vertices to remain correct either way.
