@@ -188,7 +188,7 @@ void task3() {
                 link(R, id, id + side, hazardous ? 0.05 + uniform() * 0.15 : uniform() * 0.01);
             }
             if (x + 1 < side && y + 1 < side) {
-                link(W, id, id + side + 1, 14 + int(uniform() * 3));
+                link(W, id, id + side + 1, 15 + int(uniform() * 2));
                 link(R, id, id + side + 1, hazardous ? 0.1 + uniform() * 0.2 : uniform() * 0.01);
             }
         }

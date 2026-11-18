@@ -81,19 +81,19 @@ case 4: n=60 coupled=0 optimal=26.730
  lambda=4.01 0 -> 2 -> 3 g=14.000 psafe=1.0000
  lambda=6.00 0 -> 2 -> 3 g=14.000 psafe=1.0000
  lambda=10.00 0 -> 2 -> 3 g=14.000 psafe=1.0000
- grid lambda=    0 hops=5 dist=75 risk=0.913 g=75.000 psafe=0.3531 expanded=6
+ grid lambda=    0 hops=5 dist=77 risk=0.913 g=77.000 psafe=0.3531 expanded=10
   0 -> 7 -> 14 -> 21 -> 28 -> 35
- grid lambda=   10 hops=6 dist=77 risk=0.663 g=83.628 psafe=0.4754 expanded=20
-  0 -> 6 -> 13 -> 20 -> 27 -> 34 -> 35
- grid lambda=   25 hops=7 dist=85 risk=0.279 g=91.967 psafe=0.7435 expanded=26
+ grid lambda=   10 hops=5 dist=77 risk=0.913 g=86.133 psafe=0.3531 expanded=21
+  0 -> 7 -> 14 -> 21 -> 28 -> 35
+ grid lambda=   25 hops=7 dist=87 risk=0.279 g=93.967 psafe=0.7435 expanded=27
   0 -> 6 -> 12 -> 19 -> 26 -> 33 -> 34 -> 35
- grid lambda=   50 hops=7 dist=85 risk=0.279 g=98.934 psafe=0.7435 expanded=28
+ grid lambda=   50 hops=7 dist=87 risk=0.279 g=100.934 psafe=0.7435 expanded=31
   0 -> 6 -> 12 -> 19 -> 26 -> 33 -> 34 -> 35
- grid lambda=  100 hops=9 dist=98 risk=0.041 g=102.147 psafe=0.9593 expanded=28
+ grid lambda=  100 hops=9 dist=99 risk=0.041 g=103.147 psafe=0.9593 expanded=28
   0 -> 6 -> 12 -> 18 -> 24 -> 31 -> 32 -> 33 -> 34 -> 35
- grid lambda=  200 hops=9 dist=98 risk=0.041 g=106.294 psafe=0.9593 expanded=27
+ grid lambda=  200 hops=9 dist=99 risk=0.041 g=107.294 psafe=0.9593 expanded=29
   0 -> 6 -> 12 -> 18 -> 24 -> 31 -> 32 -> 33 -> 34 -> 35
- grid lambda=  500 hops=9 dist=98 risk=0.041 g=118.736 psafe=0.9593 expanded=26
+ grid lambda=  500 hops=9 dist=99 risk=0.041 g=119.736 psafe=0.9593 expanded=27
   0 -> 6 -> 12 -> 18 -> 24 -> 31 -> 32 -> 33 -> 34 -> 35
 
 ##### TASK 4 #####
