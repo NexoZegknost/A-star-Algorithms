@@ -1,0 +1,19 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        std: [c++11, c++17]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test
+        run: make test CXXFLAGS="-std=${{ matrix.std }} -O2 -Wall -Wextra -pedantic -Werror"
+      - name: Demo
+        run: make run CXXFLAGS="-std=${{ matrix.std }} -O2 -Wall -Wextra -pedantic -Werror"
