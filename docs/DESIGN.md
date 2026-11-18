@@ -44,3 +44,16 @@ heuristic value per vertex) and call `astar::search`.
   LMS `printPath` and aggregate initialisation of the five required fields.
 - Break-even example used in the tests: a risky route `d = 10`, total risk `1.0` versus a safe route
   `d = 14`; the safe route wins as soon as `λ > 4`.
+
+## Task 4 — Game navigation on multi-terrain grid
+
+- Cell `(x, y)` is `mapGrid[x][y]`, `x` is the row (`0 … m−1`), `y` the column (`0 … n−1`);
+  vertex id `x · n + y`.
+- Directions and expansion order: `Up (−1,0)`, `Down (+1,0)`, `Left (0,−1)`, `Right (0,+1)`,
+  `Up-Left`, `Up-Right`, `Down-Left`, `Down-Right`.
+- Entering a cell costs `1.0` (flat), `2.0` (swamp); obstacles (`1`) are never entered.
+  Diagonal moves multiply the cost by `1.5` and require both adjacent cardinal cells
+  `(x+dx, y)` and `(x, y+dy)` to be non-obstacles.
+- Heuristic modes: `1` Manhattan, `2` Chebyshev. Chebyshev is admissible (every move lowers
+  it by at most `1` and costs at least `1`); Manhattan can overestimate after a diagonal step.
+- Labels: the first node is `"Start"`, every following node carries the move that reached it.

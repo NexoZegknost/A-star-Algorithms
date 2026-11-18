@@ -121,12 +121,12 @@ SearchResult search(const Graph& graph, int start, int goal) {
 }
 
 PathNode* toLinkedList(const SearchResult& result, const Graph& graph,
-                       const std::vector<std::string>& labels) {
+                       const std::vector<std::string>& pathLabels) {
     PathNode* head = nullptr;
     PathNode* tail = nullptr;
     for (size_t i = 0; i < result.nodes.size(); ++i) {
         int node = result.nodes[i];
-        appendPathNode(head, tail, createPathNode(labels[node], result.g[i], graph.h[node]));
+        appendPathNode(head, tail, createPathNode(pathLabels[i], result.g[i], graph.h[node]));
     }
     return head;
 }
@@ -167,10 +167,10 @@ bool inRange(int value, int low, int high) {
 
 const int MAX_NODES = 100;
 
-std::vector<std::string> indexLabels(int size) {
-    std::vector<std::string> labels(size);
-    for (int i = 0; i < size; ++i) {
-        labels[i] = std::to_string(i);
+std::vector<std::string> indexLabels(const SearchResult& result) {
+    std::vector<std::string> labels;
+    for (size_t i = 0; i < result.nodes.size(); ++i) {
+        labels.push_back(std::to_string(result.nodes[i]));
     }
     return labels;
 }
@@ -198,6 +198,56 @@ std::vector<int> hopsToGoal(const Graph& graph, int goal) {
         }
     }
     return hops;
+}
+
+const int OBSTACLE = 1;
+const int SWAMP = 2;
+
+struct Direction {
+    int dx;
+    int dy;
+    const char* label;
+};
+
+const Direction DIRECTIONS[8] = {
+    {-1, 0, "Up"},       {1, 0, "Down"},       {0, -1, "Left"},     {0, 1, "Right"},
+    {-1, -1, "Up-Left"}, {-1, 1, "Up-Right"},  {1, -1, "Down-Left"}, {1, 1, "Down-Right"}};
+
+struct GridShape {
+    int m;
+    int n;
+
+    bool valid() const { return m > 0 && n > 0 && m <= MAX_NODES && n <= MAX_NODES; }
+    bool contains(int x, int y) const { return inRange(x, 0, m) && inRange(y, 0, n); }
+    int id(int x, int y) const { return x * n + y; }
+    int row(int id) const { return id / n; }
+    int col(int id) const { return id % n; }
+    int cells() const { return m * n; }
+};
+
+bool isDiagonal(const Direction& d) {
+    return d.dx != 0 && d.dy != 0;
+}
+
+std::string directionLabel(const GridShape& grid, int from, int to) {
+    int dx = grid.row(to) - grid.row(from);
+    int dy = grid.col(to) - grid.col(from);
+    for (int i = 0; i < 8; ++i) {
+        if (DIRECTIONS[i].dx == dx && DIRECTIONS[i].dy == dy) return DIRECTIONS[i].label;
+    }
+    return "";
+}
+
+std::vector<std::string> directionLabels(const GridShape& grid, const std::vector<int>& cells) {
+    std::vector<std::string> labels;
+    for (size_t i = 0; i < cells.size(); ++i) {
+        labels.push_back(i == 0 ? std::string("Start") : directionLabel(grid, cells[i - 1], cells[i]));
+    }
+    return labels;
+}
+
+double terrainCost(int cell) {
+    return cell == SWAMP ? 2.0 : 1.0;
 }
 
 }
@@ -232,7 +282,7 @@ PathNode* findMeshPath(double weightMatrix[100][100], int startNode, int goalNod
 
     SearchResult result = search(graph, startNode, goalNode);
     if (!result.found) return nullptr;
-    return toLinkedList(result, graph, indexLabels(MAX_NODES));
+    return toLinkedList(result, graph, indexLabels(result));
 }
 
 PathNode* findAUVPath(double weightMatrix[100][100], int coords[100][3],
@@ -256,7 +306,7 @@ PathNode* findAUVPath(double weightMatrix[100][100], int coords[100][3],
 
     SearchResult result = search(graph, startPoint, goalPoint);
     if (!result.found) return nullptr;
-    return toLinkedList(result, graph, indexLabels(MAX_NODES));
+    return toLinkedList(result, graph, indexLabels(result));
 }
 
 PathNode* findProbabilisticPath(double distMatrix[100][100], double riskMatrix[100][100],
@@ -280,7 +330,7 @@ PathNode* findProbabilisticPath(double distMatrix[100][100], double riskMatrix[1
     SearchResult result = search(graph, startPoint, goalPoint);
     if (!result.found) return nullptr;
 
-    PathNode* head = toLinkedList(result, graph, indexLabels(MAX_NODES));
+    PathNode* head = toLinkedList(result, graph, indexLabels(result));
     double survival = 1.0;
     PathNode* node = head;
     for (size_t i = 0; i < result.nodes.size(); ++i, node = node->next) {
@@ -288,4 +338,37 @@ PathNode* findProbabilisticPath(double distMatrix[100][100], double riskMatrix[1
         node->pSafe = survival;
     }
     return head;
+}
+
+PathNode* findGamePath(int mapGrid[100][100], int m, int n, int startX, int startY,
+                       int goalX, int goalY, int mode) {
+    using namespace astar;
+    Metric metric = metricFromMode(mode, MANHATTAN, CHEBYSHEV);
+    GridShape grid = {m, n};
+    if (metric == INVALID_METRIC || !grid.valid()) return nullptr;
+    if (!grid.contains(startX, startY) || !grid.contains(goalX, goalY)) return nullptr;
+    if (mapGrid[startX][startY] == OBSTACLE || mapGrid[goalX][goalY] == OBSTACLE) return nullptr;
+
+    Graph graph(grid.cells());
+    for (int x = 0; x < m; ++x) {
+        for (int y = 0; y < n; ++y) {
+            int u = grid.id(x, y);
+            graph.h[u] = distance(metric, x - goalX, y - goalY);
+            if (mapGrid[x][y] == OBSTACLE) continue;
+
+            for (int i = 0; i < 8; ++i) {
+                const Direction& d = DIRECTIONS[i];
+                int nx = x + d.dx;
+                int ny = y + d.dy;
+                if (!grid.contains(nx, ny) || mapGrid[nx][ny] == OBSTACLE) continue;
+                if (isDiagonal(d) && (mapGrid[nx][y] == OBSTACLE || mapGrid[x][ny] == OBSTACLE)) continue;
+                double cost = terrainCost(mapGrid[nx][ny]) * (isDiagonal(d) ? 1.5 : 1.0);
+                graph.addEdge(u, grid.id(nx, ny), cost);
+            }
+        }
+    }
+
+    SearchResult result = search(graph, grid.id(startX, startY), grid.id(goalX, goalY));
+    if (!result.found) return nullptr;
+    return toLinkedList(result, graph, directionLabels(grid, result.nodes));
 }
