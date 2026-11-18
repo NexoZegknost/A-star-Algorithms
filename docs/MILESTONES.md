@@ -5,7 +5,7 @@ Deadline: **December 6th, 2026**.
 | ID | Milestone | Deliverable | Status |
 |----|-----------|-------------|--------|
 | M0 | Repository scaffold | Layout, Makefile, header check, docs | Done |
-| M1 | Shared core | `PathNode`, binary-heap A* engine, heuristics | Pending |
+| M1 | Shared core | `PathNode`, binary-heap A* engine, heuristics | Done |
 | M2 | Task 1 — Mesh network routing | `findMeshPath` + tests | Pending |
 | M3 | Task 2 — AUV 3D navigation | `findAUVPath` + tests | Pending |
 | M4 | Task 3 — Probabilistic hazard routing | `findProbabilisticPath` + tests | Pending |
