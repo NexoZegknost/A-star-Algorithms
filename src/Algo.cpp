@@ -73,6 +73,22 @@ struct SearchResult {
     std::vector<double> g;
 };
 
+const int EVENT_EXPAND = 0;
+const int EVENT_PUSH = 1;
+
+long expandedCount = 0;
+std::vector<std::vector<double> >* eventLog = nullptr;
+
+void record(int type, int node, double g, double h) {
+    if (eventLog == nullptr) return;
+    std::vector<double> event(4);
+    event[0] = type;
+    event[1] = node;
+    event[2] = g;
+    event[3] = h;
+    eventLog->push_back(event);
+}
+
 SearchResult search(const Graph& graph, int start, const std::vector<bool>& isGoal) {
     const int size = graph.size();
     std::vector<double> best(size, INF);
@@ -81,6 +97,8 @@ SearchResult search(const Graph& graph, int start, const std::vector<bool>& isGo
 
     best[start] = 0.0;
     open.push(start, 0.0, graph.h[start]);
+    record(EVENT_PUSH, start, 0.0, graph.h[start]);
+    expandedCount = 0;
 
     SearchResult result;
     result.found = false;
@@ -89,6 +107,8 @@ SearchResult search(const Graph& graph, int start, const std::vector<bool>& isGo
         OpenEntry current = open.pop();
         int u = current.node;
         if (current.g > best[u] + EPS) continue;
+        ++expandedCount;
+        record(EVENT_EXPAND, u, current.g, current.h);
 
         if (isGoal[u]) {
             for (int v = u; v != -1; v = parent[v]) {
@@ -108,6 +128,7 @@ SearchResult search(const Graph& graph, int start, const std::vector<bool>& isGo
                 best[edge.to] = candidate;
                 parent[edge.to] = u;
                 open.push(edge.to, candidate, graph.h[edge.to]);
+                record(EVENT_PUSH, edge.to, candidate, graph.h[edge.to]);
             }
         }
     }

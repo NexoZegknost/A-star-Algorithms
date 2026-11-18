@@ -8,7 +8,7 @@ BUILD_DIR := build
 LIB_SRCS := $(SRC_DIR)/PathNode.cpp $(SRC_DIR)/Algo.cpp
 LIB_HDRS := $(SRC_DIR)/PathNode.h $(SRC_DIR)/Algo.h
 
-.PHONY: all run test check-headers clean
+.PHONY: all run test check-headers report-data clean
 
 all: $(BUILD_DIR)/main
 
@@ -20,6 +20,12 @@ $(BUILD_DIR)/main: $(LIB_SRCS) $(LIB_HDRS) $(SRC_DIR)/main.cpp | $(BUILD_DIR)
 
 $(BUILD_DIR)/tests: $(LIB_SRCS) $(LIB_HDRS) $(wildcard $(TEST_DIR)/*.cpp $(TEST_DIR)/*.h) | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -I$(SRC_DIR) -I$(TEST_DIR) $(LIB_SRCS) $(wildcard $(TEST_DIR)/*.cpp) -o $@
+
+$(BUILD_DIR)/report_data: $(LIB_SRCS) $(LIB_HDRS) tools/report_data.cpp | $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) -I$(SRC_DIR) $(LIB_SRCS) tools/report_data.cpp -o $@
+
+report-data: $(BUILD_DIR)/report_data
+	./$(BUILD_DIR)/report_data > docs/report_data.txt
 
 run: $(BUILD_DIR)/main
 	./$(BUILD_DIR)/main

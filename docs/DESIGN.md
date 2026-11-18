@@ -69,3 +69,10 @@ heuristic value per vertex) and call `astar::search`.
   plain edge weight and A* stays exact. Any state on the exit cell is a goal.
 - Heuristic modes: `1` Manhattan, `2` Chebyshev; both are admissible on a 4-connected grid.
 - Labels are coordinates `"(x,y)"`.
+
+## Instrumentation
+
+`astar::expandedCount` holds the number of expansions of the last search and, when
+`astar::eventLog` points to a vector, every push and expansion is appended as
+`{type, node, g, h}` (`type 0` = expand, `1` = push). The hook is idle by default and is only
+used by `tools/report_data.cpp` to produce the traces and benchmark tables of the report.

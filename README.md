@@ -18,6 +18,7 @@ src/        PathNode.{h,cpp}, Algo.{h,cpp}, main.cpp  (submission sources)
 tests/      Self-contained test runner
 docs/       Milestones and design notes
 report/     Report sources
+tools/      Experiment and trace generator used by the report
 scripts/    Header check and submission packaging
 ```
 
@@ -27,6 +28,7 @@ scripts/    Header check and submission packaging
 make          # build the demo
 make run      # run the demo
 make test     # header check + unit tests
+make report-data  # regenerate traces and benchmarks in docs/report_data.txt
 ```
 
 Sample demo output: [docs/sample_output.txt](docs/sample_output.txt).

@@ -1,0 +1,207 @@
+
+##### TASK 1 #####
+         push 0        g=0.000 h=2.400 f=2.400
+  [ 1] EXPAND 0        g=0.000 h=2.400 f=2.400
+         push 1        g=1.300 h=2.400 f=3.700
+         push 2        g=4.400 h=1.200 f=5.600
+  [ 2] EXPAND 1        g=1.300 h=2.400 f=3.700
+         push 2        g=2.700 h=1.200 f=3.900
+         push 3        g=6.600 h=1.200 f=7.800
+  [ 3] EXPAND 2        g=2.700 h=1.200 f=3.900
+         push 3        g=4.000 h=1.200 f=5.200
+         push 4        g=8.900 h=0.000 f=8.900
+  [ 4] EXPAND 3        g=4.000 h=1.200 f=5.200
+         push 4        g=6.200 h=0.000 f=6.200
+  [ 5] EXPAND 4        g=6.200 h=0.000 f=6.200
+  path 0 -> 1 -> 2 -> 3 -> 4, expanded 5
+    0            g=   0.000 h=   2.400 f=   2.400 psafe=1.0000
+    1            g=   1.300 h=   2.400 f=   3.700 psafe=1.0000
+    2            g=   2.700 h=   1.200 f=   3.900 psafe=1.0000
+    3            g=   4.000 h=   1.200 f=   5.200 psafe=1.0000
+    4            g=   6.200 h=   0.000 f=   6.200 psafe=1.0000
+
+##### TASK 2 #####
+case 1: n=30 coupled=1 optimal=136.670
+  Manhattan  cost=  138.930 expanded= 10 hops= 5 gap=1.65%
+  Euclidean  cost=  136.670 expanded= 11 hops= 5 gap=0.00%
+  Chebyshev  cost=  136.670 expanded= 11 hops= 5 gap=0.00%
+case 2: n=60 coupled=1 optimal=102.620
+  Manhattan  cost=  102.620 expanded=  6 hops= 4 gap=0.00%
+  Euclidean  cost=  102.620 expanded=  8 hops= 4 gap=0.00%
+  Chebyshev  cost=  102.620 expanded= 10 hops= 4 gap=0.00%
+case 3: n=90 coupled=1 optimal=129.520
+  Manhattan  cost=  129.800 expanded= 13 hops= 7 gap=0.22%
+  Euclidean  cost=  129.520 expanded= 25 hops= 7 gap=0.00%
+  Chebyshev  cost=  129.520 expanded= 35 hops= 7 gap=0.00%
+case 4: n=60 coupled=0 optimal=26.730
+  Manhattan  cost=   39.780 expanded=  8 hops= 7 gap=48.82%
+  Euclidean  cost=   40.900 expanded= 10 hops= 8 gap=53.01%
+  Chebyshev  cost=   31.570 expanded=  8 hops= 7 gap=18.11%
+ demo Manhattan: 0 -> 2 -> 4 expanded=3
+    0            g=   0.000 h=  12.000 f=  12.000 psafe=1.0000
+    2            g=   6.600 h=  17.000 f=  23.600 psafe=1.0000
+    4            g=  16.500 h=   0.000 f=  16.500 psafe=1.0000
+         push 0        g=0.000 h=12.000 f=12.000
+  [ 1] EXPAND 0        g=0.000 h=12.000 f=12.000
+         push 1        g=8.000 h=70.000 f=78.000
+         push 2        g=6.600 h=17.000 f=23.600
+  [ 2] EXPAND 2        g=6.600 h=17.000 f=23.600
+         push 3        g=11.000 h=26.000 f=37.000
+         push 4        g=16.500 h=0.000 f=16.500
+  [ 3] EXPAND 4        g=16.500 h=0.000 f=16.500
+ demo Euclidean: 0 -> 2 -> 4 expanded=3
+    0            g=   0.000 h=  12.000 f=  12.000 psafe=1.0000
+    2            g=   6.600 h=  12.207 f=  18.807 psafe=1.0000
+    4            g=  16.500 h=   0.000 f=  16.500 psafe=1.0000
+         push 0        g=0.000 h=12.000 f=12.000
+  [ 1] EXPAND 0        g=0.000 h=12.000 f=12.000
+         push 1        g=8.000 h=60.564 f=68.564
+         push 2        g=6.600 h=12.207 f=18.807
+  [ 2] EXPAND 2        g=6.600 h=12.207 f=18.807
+         push 3        g=11.000 h=20.445 f=31.445
+         push 4        g=16.500 h=0.000 f=16.500
+  [ 3] EXPAND 4        g=16.500 h=0.000 f=16.500
+ demo Chebyshev: 0 -> 2 -> 4 expanded=3
+    0            g=   0.000 h=  12.000 f=  12.000 psafe=1.0000
+    2            g=   6.600 h=  10.000 f=  16.600 psafe=1.0000
+    4            g=  16.500 h=   0.000 f=  16.500 psafe=1.0000
+         push 0        g=0.000 h=12.000 f=12.000
+  [ 1] EXPAND 0        g=0.000 h=12.000 f=12.000
+         push 1        g=8.000 h=60.000 f=68.000
+         push 2        g=6.600 h=10.000 f=16.600
+  [ 2] EXPAND 2        g=6.600 h=10.000 f=16.600
+         push 3        g=11.000 h=20.000 f=31.000
+         push 4        g=16.500 h=0.000 f=16.500
+  [ 3] EXPAND 4        g=16.500 h=0.000 f=16.500
+
+##### TASK 3 #####
+ lambda=0.00 0 -> 1 -> 3 g=10.000 psafe=0.2500
+ lambda=2.00 0 -> 1 -> 3 g=12.000 psafe=0.2500
+ lambda=4.00 0 -> 1 -> 3 g=14.000 psafe=0.2500
+ lambda=4.01 0 -> 2 -> 3 g=14.000 psafe=1.0000
+ lambda=6.00 0 -> 2 -> 3 g=14.000 psafe=1.0000
+ lambda=10.00 0 -> 2 -> 3 g=14.000 psafe=1.0000
+ grid lambda=    0 hops=5 dist=75 risk=0.913 g=75.000 psafe=0.3531 expanded=6
+  0 -> 7 -> 14 -> 21 -> 28 -> 35
+ grid lambda=   10 hops=6 dist=77 risk=0.663 g=83.628 psafe=0.4754 expanded=20
+  0 -> 6 -> 13 -> 20 -> 27 -> 34 -> 35
+ grid lambda=   25 hops=7 dist=85 risk=0.279 g=91.967 psafe=0.7435 expanded=26
+  0 -> 6 -> 12 -> 19 -> 26 -> 33 -> 34 -> 35
+ grid lambda=   50 hops=7 dist=85 risk=0.279 g=98.934 psafe=0.7435 expanded=28
+  0 -> 6 -> 12 -> 19 -> 26 -> 33 -> 34 -> 35
+ grid lambda=  100 hops=9 dist=98 risk=0.041 g=102.147 psafe=0.9593 expanded=28
+  0 -> 6 -> 12 -> 18 -> 24 -> 31 -> 32 -> 33 -> 34 -> 35
+ grid lambda=  200 hops=9 dist=98 risk=0.041 g=106.294 psafe=0.9593 expanded=27
+  0 -> 6 -> 12 -> 18 -> 24 -> 31 -> 32 -> 33 -> 34 -> 35
+ grid lambda=  500 hops=9 dist=98 risk=0.041 g=118.736 psafe=0.9593 expanded=26
+  0 -> 6 -> 12 -> 18 -> 24 -> 31 -> 32 -> 33 -> 34 -> 35
+
+##### TASK 4 #####
+ mode 1 expanded=7
+         push (0,0)    g=0.000 h=6.000 f=6.000
+  [ 1] EXPAND (0,0)    g=0.000 h=6.000 f=6.000
+         push (1,0)    g=1.000 h=5.000 f=6.000
+         push (0,1)    g=1.000 h=5.000 f=6.000
+  [ 2] EXPAND (1,0)    g=1.000 h=5.000 f=6.000
+         push (2,0)    g=2.000 h=4.000 f=6.000
+  [ 3] EXPAND (2,0)    g=2.000 h=4.000 f=6.000
+         push (3,0)    g=3.000 h=3.000 f=6.000
+  [ 4] EXPAND (3,0)    g=3.000 h=3.000 f=6.000
+         push (3,1)    g=4.000 h=2.000 f=6.000
+  [ 5] EXPAND (3,1)    g=4.000 h=2.000 f=6.000
+         push (3,2)    g=5.000 h=1.000 f=6.000
+  [ 6] EXPAND (3,2)    g=5.000 h=1.000 f=6.000
+         push (2,2)    g=6.000 h=2.000 f=8.000
+         push (3,3)    g=6.000 h=0.000 f=6.000
+         push (2,3)    g=6.500 h=1.000 f=7.500
+  [ 7] EXPAND (3,3)    g=6.000 h=0.000 f=6.000
+    Start        g=   0.000 h=   6.000 f=   6.000 psafe=1.0000
+    Down         g=   1.000 h=   5.000 f=   6.000 psafe=1.0000
+    Down         g=   2.000 h=   4.000 f=   6.000 psafe=1.0000
+    Down         g=   3.000 h=   3.000 f=   6.000 psafe=1.0000
+    Right        g=   4.000 h=   2.000 f=   6.000 psafe=1.0000
+    Right        g=   5.000 h=   1.000 f=   6.000 psafe=1.0000
+    Right        g=   6.000 h=   0.000 f=   6.000 psafe=1.0000
+ mode 2 expanded=8
+         push (0,0)    g=0.000 h=3.000 f=3.000
+  [ 1] EXPAND (0,0)    g=0.000 h=3.000 f=3.000
+         push (1,0)    g=1.000 h=3.000 f=4.000
+         push (0,1)    g=1.000 h=3.000 f=4.000
+  [ 2] EXPAND (1,0)    g=1.000 h=3.000 f=4.000
+         push (2,0)    g=2.000 h=3.000 f=5.000
+  [ 3] EXPAND (0,1)    g=1.000 h=3.000 f=4.000
+         push (0,2)    g=2.000 h=3.000 f=5.000
+  [ 4] EXPAND (2,0)    g=2.000 h=3.000 f=5.000
+         push (3,0)    g=3.000 h=3.000 f=6.000
+  [ 5] EXPAND (0,2)    g=2.000 h=3.000 f=5.000
+         push (1,2)    g=4.000 h=2.000 f=6.000
+         push (0,3)    g=3.000 h=3.000 f=6.000
+         push (1,3)    g=3.500 h=2.000 f=5.500
+  [ 6] EXPAND (1,3)    g=3.500 h=2.000 f=5.500
+         push (2,3)    g=4.500 h=1.000 f=5.500
+         push (2,2)    g=5.000 h=1.000 f=6.000
+  [ 7] EXPAND (2,3)    g=4.500 h=1.000 f=5.500
+         push (3,3)    g=5.500 h=0.000 f=5.500
+         push (3,2)    g=6.000 h=1.000 f=7.000
+  [ 8] EXPAND (3,3)    g=5.500 h=0.000 f=5.500
+    Start        g=   0.000 h=   3.000 f=   3.000 psafe=1.0000
+    Right        g=   1.000 h=   3.000 f=   4.000 psafe=1.0000
+    Right        g=   2.000 h=   3.000 f=   5.000 psafe=1.0000
+    Down-Right   g=   3.500 h=   2.000 f=   5.500 psafe=1.0000
+    Down         g=   4.500 h=   1.000 f=   5.500 psafe=1.0000
+    Down         g=   5.500 h=   0.000 f=   5.500 psafe=1.0000
+ random 20x20
+  Manhattan  cost=35.50 expanded=65 moves=28
+  Chebyshev  cost=34.00 expanded=193 moves=24
+ random 30x30
+  Manhattan  cost=52.00 expanded=104 moves=42
+  Chebyshev  cost=51.00 expanded=473 moves=44
+ random 40x40
+  Manhattan  cost=67.00 expanded=71 moves=52
+  Chebyshev  cost=67.00 expanded=823 moves=52
+
+##### TASK 5 #####
+ expanded=9
+         push (0,0)-   g=0.000 h=6.000 f=6.000
+  [ 1] EXPAND (0,0)-   g=0.000 h=6.000 f=6.000
+         push (1,0)D   g=1.000 h=5.000 f=6.000
+         push (0,1)R   g=1.000 h=5.000 f=6.000
+  [ 2] EXPAND (1,0)D   g=1.000 h=5.000 f=6.000
+         push (0,0)U   g=2.500 h=6.000 f=8.500
+         push (2,0)D   g=2.000 h=4.000 f=6.000
+  [ 3] EXPAND (2,0)D   g=2.000 h=4.000 f=6.000
+         push (1,0)U   g=3.500 h=5.000 f=8.500
+         push (2,1)R   g=3.500 h=3.000 f=6.500
+  [ 4] EXPAND (0,1)R   g=1.000 h=5.000 f=6.000
+         push (0,0)L   g=2.500 h=6.000 f=8.500
+         push (0,2)R   g=2.000 h=4.000 f=6.000
+  [ 5] EXPAND (0,2)R   g=2.000 h=4.000 f=6.000
+         push (0,1)L   g=3.500 h=5.000 f=8.500
+         push (0,3)R   g=3.000 h=3.000 f=6.000
+  [ 6] EXPAND (0,3)R   g=3.000 h=3.000 f=6.000
+         push (1,3)D   g=4.500 h=2.000 f=6.500
+         push (0,2)L   g=4.500 h=4.000 f=8.500
+  [ 7] EXPAND (1,3)D   g=4.500 h=2.000 f=6.500
+         push (0,3)U   g=6.000 h=3.000 f=9.000
+         push (2,3)D   g=5.500 h=1.000 f=6.500
+  [ 8] EXPAND (2,3)D   g=5.500 h=1.000 f=6.500
+         push (1,3)U   g=7.000 h=2.000 f=9.000
+         push (3,3)D   g=6.500 h=0.000 f=6.500
+         push (2,2)L   g=7.000 h=2.000 f=9.000
+  [ 9] EXPAND (3,3)D   g=6.500 h=0.000 f=6.500
+    (0,0)        g=   0.000 h=   6.000 f=   6.000 psafe=1.0000
+    (0,1)        g=   1.000 h=   5.000 f=   6.000 psafe=1.0000
+    (0,2)        g=   2.000 h=   4.000 f=   6.000 psafe=1.0000
+    (0,3)        g=   3.000 h=   3.000 f=   6.000 psafe=1.0000
+    (1,3)        g=   4.500 h=   2.000 f=   6.500 psafe=1.0000
+    (2,3)        g=   5.500 h=   1.000 f=   6.500 psafe=1.0000
+    (3,3)        g=   6.500 h=   0.000 f=   6.500 psafe=1.0000
+ random 8x10
+  Manhattan  cost=18.50 expanded=42 moves=16
+  Chebyshev  cost=18.50 expanded=102 moves=16
+ random 9x10
+  Manhattan  cost=18.00 expanded=32 moves=17
+  Chebyshev  cost=18.00 expanded=115 moves=17
+ random 10x10
+  Manhattan  cost=20.00 expanded=31 moves=18
+  Chebyshev  cost=20.00 expanded=90 moves=18
