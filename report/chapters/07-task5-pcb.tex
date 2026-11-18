@@ -1,0 +1,199 @@
+% ==============================================================================
+% CHƯƠNG 7: TASK 5 — ĐI DÂY PCB CÓ PHẠT BẺ GÓC
+% ==============================================================================
+\chapter{Task 5: Đi dây mạch in PCB có phạt bẻ góc}
+\label{chap:task5}
+
+\section{Mô hình hóa}
+\label{sec:t5-mo-hinh}
+
+Bảng mạch là lưới $m \times n$ (\ma{pcbGrid}), ô bằng $1$ là vùng bị chiếm (linh kiện), các ô
+khác đi dây được. Dây dẫn chỉ đi theo bốn hướng trục (Up, Down, Left, Right) như trong định tuyến
+mê cung kinh điển \cite{lee1961}. Mỗi bước dài một đơn vị; nếu hướng của bước khác hướng của bước
+ngay trước thì cộng thêm phí bẻ góc $B = 0{,}5$:
+\begin{equation}
+  g(n_{k}) = g(n_{k-1}) + 1 + B \cdot [\,\text{dir}_k \ne \text{dir}_{k-1}\,], \qquad B = 0{,}5,
+  \label{eq:t5-cost}
+\end{equation}
+với quy ước bước đầu tiên không có hướng trước nên không bị phạt. Heuristic: Manhattan
+(\ma{mode} $1$) hoặc Chebyshev (\ma{mode} $2$) tới ô ra.
+
+\section{Thuật toán biến đổi lưới thành đồ thị}
+\label{sec:t5-bien-doi}
+
+\paragraph{Đánh số đỉnh} Ô $(x, y)$ ứng với đỉnh $\text{id}(x, y) = x \cdot n + y$; ngược lại
+$x = \lfloor \text{id} / n \rfloor$, $y = \text{id} \bmod n$. Ánh xạ này là song ánh từ tập ô lên
+$\{0, \dots, mn - 1\}$.
+
+\paragraph{Dựng cạnh} Với mỗi ô tự do $(x, y)$ và mỗi hướng trục $(\Delta x, \Delta y)$, nếu ô
+$(x + \Delta x, y + \Delta y)$ nằm trong lưới và tự do thì thêm cung có trọng số $1$. Mỗi cạnh
+vô hướng của lưới được sinh hai lần (một lần từ mỗi đầu), nên ma trận kết quả đối xứng.
+
+\begin{lstlisting}[style=gia, caption={Biến đổi lưới PCB thành ma trận trọng số}, label={lst:t5-bien-doi}]
+function BuildGraph(pcbGrid, $m$, $n$, weightMatrix)
+    set every weightMatrix$[i][j] \gets 0$
+    for $x \gets 0$ to $m-1$, $y \gets 0$ to $n-1$
+        if pcbGrid$[x][y] = 1$ then continue
+        $u \gets x \cdot n + y$
+        for each $(\Delta x, \Delta y, d)$ in {Up, Down, Left, Right}
+            $(x', y') \gets (x + \Delta x, y + \Delta y)$
+            if $(x', y')$ inside grid and pcbGrid$[x'][y'] \ne 1$ then
+                $v \gets x' \cdot n + y'$
+                wires$[u]$.add($v$, $d$)
+                if $u < 100$ and $v < 100$ then weightMatrix$[u][v] \gets 1$
+\end{lstlisting}
+
+Thuật toán duyệt mỗi ô và bốn hướng một lần nên tốn $O(mn)$ thời gian, cộng $O(100^2)$ để xóa
+ma trận đầu vào. Ma trận \ma{weightMatrix[100][100]} chỉ chứa được lưới có $mn \le 100$ ô; với lưới
+lớn hơn, danh sách kề nội bộ \ma{wires} vẫn đầy đủ nên việc tìm đường không bị ảnh hưởng.
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[x=1.15cm, y=1.15cm]
+    \foreach \x/\y/\t in {0/0/0,0/1/0,0/2/0,0/3/0, 1/0/0,1/1/1,1/2/1,1/3/0,
+                          2/0/0,2/1/0,2/2/0,2/3/0, 3/0/1,3/1/0,3/2/0,3/3/0} {
+      \pgfmathtruncatemacro{\id}{\x*4+\y}
+      \ifnum\t=1 \fill[bkxanhdam!80] (\y, -\x) rectangle ++(1, -1);
+      \else \fill[white] (\y, -\x) rectangle ++(1, -1); \fi
+      \draw[bkxam!60] (\y, -\x) rectangle ++(1, -1);
+      \node[font=\scriptsize, text=bkxam] at (\y+0.5, -\x-0.5) {\id};
+    }
+    \draw[do, line width=2pt, -{Stealth[length=3mm]}]
+      (0.5, -0.5) -- (3.5, -0.5) -- (3.5, -3.5);
+    \node[font=\small\bfseries, anchor=south] at (0.5, -0.45) {pin};
+    \node[font=\small\bfseries, anchor=north] at (3.5, -3.55) {pad};
+  \end{tikzpicture}
+  \caption{Bảng mạch mẫu $4 \times 4$ (ô xanh đậm bị chiếm, số là chỉ số đỉnh) và đường dây tìm được}
+  \label{fig:t5-luoi}
+\end{figure}
+
+\begin{table}[H]
+  \centering
+  \caption{Ma trận trọng số \ma{weightMatrix} được điền cho bảng mạch ở \Hinh{fig:t5-luoi}}
+  \label{tab:t5-ma-tran}
+  \footnotesize
+  \setlength{\tabcolsep}{3.2pt}
+  \begin{tabular}{c|cccccccccccccccc}
+    & \textbf{0} & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{6} & \textbf{7}
+    & \textbf{8} & \textbf{9} & \textbf{10} & \textbf{11} & \textbf{12} & \textbf{13} & \textbf{14} & \textbf{15} \\
+    \hline
+    \textbf{0} & \mz & \mo & \mz & \mz & \mo & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz \\
+    \textbf{1} & \mo & \mz & \mo & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz \\
+    \textbf{2} & \mz & \mo & \mz & \mo & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz \\
+    \textbf{3} & \mz & \mz & \mo & \mz & \mz & \mz & \mz & \mo & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz \\
+    \textbf{4} & \mo & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mo & \mz & \mz & \mz & \mz & \mz & \mz & \mz \\
+    \textbf{5} & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz \\
+    \textbf{6} & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz \\
+    \textbf{7} & \mz & \mz & \mz & \mo & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mo & \mz & \mz & \mz & \mz \\
+    \textbf{8} & \mz & \mz & \mz & \mz & \mo & \mz & \mz & \mz & \mz & \mo & \mz & \mz & \mz & \mz & \mz & \mz \\
+    \textbf{9} & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mo & \mz & \mo & \mz & \mz & \mo & \mz & \mz \\
+    \textbf{10} & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mo & \mz & \mo & \mz & \mz & \mo & \mz \\
+    \textbf{11} & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mo & \mz & \mz & \mo & \mz & \mz & \mz & \mz & \mo \\
+    \textbf{12} & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz \\
+    \textbf{13} & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mo & \mz & \mz & \mz & \mz & \mo & \mz \\
+    \textbf{14} & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mo & \mz & \mz & \mo & \mz & \mo \\
+    \textbf{15} & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mz & \mo & \mz & \mz & \mo & \mz \\  \end{tabular}
+\end{table}
+
+Các hàng $5$, $6$, $12$ toàn $0$ vì đó là ô bị chiếm. Hàng $3$ (ô góc $(0,3)$) chỉ có hai số $1$ tại
+đỉnh $2$ và $7$; hàng $10$ (ô $(2,2)$) có ba số $1$ tại $9, 11, 14$ vì láng giềng phía trên $(1,2)$ bị
+chiếm. Ma trận đối xứng, đúng với tính vô hướng của lưới.
+
+\section{Duy trì hướng trước đó trong A*}
+\label{sec:t5-huong}
+
+Phí bẻ góc phụ thuộc vào \emph{bước trước}, nên nếu chỉ dùng ô làm trạng thái thì chi phí của một
+cung không còn cố định và A* (vốn giả định chi phí cung chỉ phụ thuộc hai đầu cung) có thể sai:
+hai đường cùng tới một ô với hướng khác nhau có tương lai khác nhau, nhưng đường có $g$ lớn hơn
+một chút có thể bị loại dù sau đó đi tiếp rẻ hơn.
+
+Chương trình giải quyết bằng cách \nhanmanh{mở rộng không gian trạng thái}: mỗi trạng thái là
+cặp $(\text{ô},\ \text{hướng vào})$ với hướng vào thuộc $\{\text{Up}, \text{Down}, \text{Left},
+\text{Right}, \varnothing\}$, trong đó $\varnothing$ chỉ dùng cho điểm xuất phát. Trạng thái được
+mã hóa thành số nguyên $5 \cdot \text{id}(\text{ô}) + \text{hướng}$, nên lõi A* dùng chung không cần
+sửa gì.
+
+\begin{khungcongthuc}[Cung trong đồ thị trạng thái]
+  \begin{equation}
+    (u, d_{\text{vào}}) \xrightarrow{\ \ d\ \ } (v, d), \qquad
+    c = 1 + \begin{cases} 0{,}5 & \text{nếu } d_{\text{vào}} \ne \varnothing \text{ và } d_{\text{vào}} \ne d \\ 0 & \text{ngược lại} \end{cases}
+    \label{eq:t5-state}
+  \end{equation}
+\end{khungcongthuc}
+
+\begin{khungma}{Algo.cpp (trích findPCBPath)}{C++}
+for (int incoming = 0; incoming < STATES_PER_CELL; ++incoming) {
+    int state = u * STATES_PER_CELL + incoming;
+    graph.h[state] = h;
+    isGoal[state] = u == grid.id(exitX, exitY);
+    for (size_t i = 0; i < wires[u].size(); ++i) {
+        const Wire& wire = wires[u][i];
+        bool bends = incoming != NO_DIRECTION && incoming != wire.direction;
+        double cost = TRACE_UNIT + (bends ? BEND_PENALTY : 0.0);
+        graph.addEdge(state, wire.to * STATES_PER_CELL + wire.direction, cost);
+    }
+}
+\end{khungma}
+
+\begin{dinhly}
+  Đường đi trong đồ thị trạng thái từ $(s, \varnothing)$ tới một trạng thái bất kỳ của ô ra tương
+  ứng một-một với đường dây trên lưới, và chi phí của chúng bằng nhau. Do đó đường ngắn nhất trong
+  đồ thị trạng thái là đường dây tối ưu theo \eqref{eq:t5-cost}.
+\end{dinhly}
+
+\begin{loigiai}
+  Một đường dây $s = c_0, c_1, \dots, c_k$ với các hướng $d_1, \dots, d_k$ ứng với dãy trạng thái
+  $(c_0, \varnothing), (c_1, d_1), \dots, (c_k, d_k)$; ngược lại bỏ thành phần hướng của dãy trạng
+  thái ta được đường dây, và thành phần hướng được xác định duy nhất bởi hai ô liên tiếp. Chi phí
+  mỗi cung \eqref{eq:t5-state} bằng đúng số hạng tương ứng của \eqref{eq:t5-cost}.
+\end{loigiai}
+
+Mọi trạng thái của ô ra đều là đích (tập \ma{isGoal}), vì đi tới ô ra từ hướng nào cũng được.
+Manhattan nhất quán vì mỗi bước tốn ít nhất $1$ và làm khoảng cách Manhattan giảm tối đa $1$;
+Chebyshev $\le$ Manhattan nên cũng nhất quán nhưng kém thông tin hơn. Đồ thị trạng thái có
+$5mn$ đỉnh và tối đa $20mn$ cung, nên độ phức tạp vẫn là $O(mn \log(mn))$.
+
+\section{Vết thực thi trên bảng mạch mẫu}
+\label{sec:t5-vet}
+
+Đi dây từ $(0,0)$ tới $(3,3)$ trên \Hinh{fig:t5-luoi}, \ma{mode} $= 1$. Trạng thái được viết
+$(x,y)^{d}$ với $d \in \{U, D, L, R, -\}$.
+
+\begin{bangbieu}{Vết A* của Task 5 trên đồ thị trạng thái (Manhattan)}{tab:t5-vet}{C{0.8cm} C{3.2cm} Y}
+  \hangtieude \thead{Vòng} & \thead{Mở rộng $(g; h; f)$} & \thead{Đưa vào \OPEN} \\
+  \midrule
+  1 & $(0,0)^{-}\ (0; 6; 6)$ & $(1,0)^{D}\ (1; 5; 6)$, $(0,1)^{R}\ (1; 5; 6)$ \\
+  2 & $(1,0)^{D}\ (1; 5; 6)$ & $(0,0)^{U}\ (2{,}5; 6; 8{,}5)$ (quay đầu bị phạt), $(2,0)^{D}\ (2; 4; 6)$ \\
+  3 & $(2,0)^{D}\ (2; 4; 6)$ & $(1,0)^{U}\ (3{,}5; 5; 8{,}5)$, $(2,1)^{R}\ (3{,}5; 3; 6{,}5)$ \textit{(bẻ góc)} \\
+  4 & $(0,1)^{R}\ (1; 5; 6)$ & $(0,0)^{L}\ (2{,}5; 6; 8{,}5)$, $(0,2)^{R}\ (2; 4; 6)$ \\
+  5 & $(0,2)^{R}\ (2; 4; 6)$ & $(0,1)^{L}\ (3{,}5; 5; 8{,}5)$, $(0,3)^{R}\ (3; 3; 6)$ \\
+  6 & $(0,3)^{R}\ (3; 3; 6)$ & $(1,3)^{D}\ (4{,}5; 2; 6{,}5)$ \textit{(bẻ góc)}, $(0,2)^{L}\ (4{,}5; 4; 8{,}5)$ \\
+  7 & $(1,3)^{D}\ (4{,}5; 2; 6{,}5)$ & $(0,3)^{U}\ (6; 3; 9)$, $(2,3)^{D}\ (5{,}5; 1; 6{,}5)$ \\
+  8 & $(2,3)^{D}\ (5{,}5; 1; 6{,}5)$ & $(1,3)^{U}\ (7; 2; 9)$, $(3,3)^{D}\ (6{,}5; 0; 6{,}5)$, $(2,2)^{L}\ (7; 2; 9)$ \\
+  9 & $(3,3)^{D}\ (6{,}5; 0; 6{,}5)$ & Trạng thái của ô ra được lấy ra, dừng \\
+\end{bangbieu}
+
+Ở vòng 4, $(2,1)^{R}$ với $f = 6{,}5$ và $(0,1)^{R}$ với $f = 6$ cùng nằm trong \OPEN: hai nhánh
+xuống--phải và phải--xuống có cùng độ dài, nhưng nhánh đi xuống phải bẻ góc sớm vì ô $(3,0)$ bị
+chiếm và sẽ phải bẻ góc thêm lần nữa ở $(2,3)$. Nhánh phải--xuống chỉ bẻ góc một lần tại $(0,3)$.
+
+\begin{ketqua}[Kết quả Task 5 trên bảng mạch mẫu]
+  Đường dây $(0,0) \to (0,1) \to (0,2) \to (0,3) \to (1,3) \to (2,3) \to (3,3)$: dài 6 đơn vị,
+  một lần bẻ góc, $g = 6 + 0{,}5 = 6{,}5$. Đường qua $(2,0), (2,1), (2,2), (2,3)$ cũng dài 6 nhưng
+  bẻ góc hai lần ($g = 7$) nên bị loại.
+\end{ketqua}
+
+\section{So sánh heuristic}
+\label{sec:t5-so-sanh}
+
+\begin{bangbieu}{Manhattan và Chebyshev trên bảng mạch ngẫu nhiên, 20\% ô bị chiếm (chi phí / số trạng thái mở rộng)}{tab:t5-so-sanh}{C{2.4cm} Z Z}
+  \hangtieude \thead{Kích thước} & \thead{Manhattan} & \thead{Chebyshev} \\
+  \midrule
+  $8 \times 10$  & \otot 18,5 / 42 & 18,5 / 102 \\
+  $9 \times 10$  & \otot 18,0 / 32 & 18,0 / 115 \\
+  $10 \times 10$ & \otot 20,0 / 31 & 20,0 / 90 \\
+\end{bangbieu}
+\nguonbang{\ma{make report-data}, hạt giống 5. Cả hai chế độ đều trùng Dijkstra trên đồ thị trạng thái (kiểm thử 30 bảng mạch).}
+
+Trên lưới 4 hướng, Manhattan là cận dưới chặt của độ dài dây nên mở rộng ít hơn Chebyshev 2,4 tới
+3,6 lần mà vẫn tối ưu; đây là lựa chọn phù hợp cho bài toán đi dây.

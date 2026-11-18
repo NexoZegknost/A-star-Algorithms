@@ -1,0 +1,50 @@
+% ==============================================================================
+% PHỤ LỤC A: HƯỚNG DẪN BIÊN DỊCH, KIỂM THỬ VÀ TÁI LẬP SỐ LIỆU
+% ==============================================================================
+\chapter{Hướng dẫn biên dịch, kiểm thử và tái lập số liệu}
+\label{app:huong-dan}
+
+\section{Biên dịch và chạy}
+
+\begin{khungbash}[Các lệnh chính]
+$ make                # biên dịch chương trình mẫu build/main
+$ make run            # chạy main.cpp với dữ liệu mẫu của cả 5 task
+$ make test           # kiểm tra thư viện được phép + 23 ca kiểm thử
+$ make report-data    # sinh lại docs/report_data.txt (vết và bảng số của báo cáo)
+$ scripts/package.sh <MSSV>   # tạo dist/<MSSV>.rar để nộp
+\end{khungbash}
+
+Biên dịch thủ công không cần \ma{make}:
+
+\begin{khungbash}[Biên dịch trực tiếp]
+$ g++ -std=c++11 -O2 -Isrc src/PathNode.cpp src/Algo.cpp src/main.cpp -o main
+$ ./main
+\end{khungbash}
+
+\section{Tương thích với CodeRunner}
+
+\begin{itemize}
+  \item \ma{Algo.cpp} và \ma{PathNode.cpp} chỉ dùng \ma{<string>}, \ma{<vector>},
+        \ma{<cmath>}, \ma{<algorithm>}; \ma{main.cpp} dùng thêm \ma{<iostream>}.
+  \item Hàm \ma{printPath} chỉ được định nghĩa trong \ma{main.cpp}, không có trong mã nộp
+        CodeRunner, đúng yêu cầu của đề.
+  \item Các biến \ma{astar::expandedCount} và \ma{astar::eventLog} chỉ phục vụ đo đạc; khi
+        \ma{eventLog} rỗng (mặc định), chi phí thêm là một phép so sánh con trỏ mỗi lần ghi.
+\end{itemize}
+
+\section{Đầu ra mẫu}
+
+Trích đầu ra của \ma{make run} cho Task 4 (đầy đủ trong \ma{docs/sample_output.txt}):
+
+\begin{khungbash}[make run (trích)]
+=== Task 4: Game grid (0,0) -> (4,4) (Chebyshev) ===
+Solution Path:
+Node: Start | f: 4 | g: 0 | h: 4
+Node: Right | f: 5 | g: 1 | h: 4
+Node: Right | f: 6 | g: 2 | h: 4
+Node: Right | f: 7 | g: 3 | h: 4
+Node: Down-Right | f: 7.5 | g: 4.5 | h: 3
+Node: Down | f: 7.5 | g: 5.5 | h: 2
+Node: Down | f: 7.5 | g: 6.5 | h: 1
+Node: Down | f: 7.5 | g: 7.5 | h: 0
+\end{khungbash}

@@ -1,0 +1,24 @@
+% ==============================================================================
+% TÓM TẮT
+% ==============================================================================
+\ChuongPhu{Tóm tắt}
+
+Báo cáo trình bày việc cài đặt thuật toán A* bằng \Cpp{} cho năm bài toán của bài tập lớn:
+định tuyến gói tin trong mạng mesh có phạt tắc nghẽn, dẫn đường tàu ngầm tự hành trong không
+gian ba chiều, tìm đường có rủi ro theo kỳ vọng, di chuyển nhân vật trên bản đồ nhiều địa
+hình và đi dây mạch in có phạt bẻ góc.
+
+Cả năm bài toán được quy về một đồ thị có hướng có trọng số không âm và giải bằng cùng một lõi
+A*: hàng đợi ưu tiên dạng đống nhị phân dựng trên \ma{std::push_heap}, quy tắc phá hòa cố
+định, xóa lười và cho phép mở lại đỉnh. Riêng bài toán đi dây, trạng thái tìm kiếm được mở
+rộng thành cặp (ô, hướng vào) để phí bẻ góc trở thành trọng số cạnh thông thường. Lời giải được
+trả về dưới dạng danh sách liên kết \ma{PathNode} chung cho mọi bài.
+
+Kết quả được kiểm chứng bằng 23 ca kiểm thử, trong đó các bài có heuristic chấp nhận được được
+đối chiếu với Dijkstra trên dữ liệu ngẫu nhiên. Thực nghiệm cho thấy heuristic chấp nhận
+được (Euclid, Chebyshev) luôn cho đường tối ưu nhưng mở rộng nhiều đỉnh hơn, còn Manhattan mở
+rộng ít đỉnh nhất nhưng có thể sai lệch chi phí khi đánh giá quá; tham số $\lambda$ chuyển
+lời giải từ đường ngắn nhiều rủi ro sang đường dài an toàn theo từng ngưỡng xác định.
+
+\vspace{0.6em}
+\noindent\textbf{Từ khóa:} \textit{\TuKhoa}

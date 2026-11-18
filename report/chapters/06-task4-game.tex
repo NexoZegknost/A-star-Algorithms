@@ -1,0 +1,181 @@
+% ==============================================================================
+% CHƯƠNG 6: TASK 4 — NHÂN VẬT GAME TRÊN BẢN ĐỒ NHIỀU ĐỊA HÌNH
+% ==============================================================================
+\chapter{Task 4: Di chuyển nhân vật game trên bản đồ nhiều địa hình}
+\label{chap:task4}
+
+\section{Mô hình hóa}
+\label{sec:t4-mo-hinh}
+
+Bản đồ là lưới $m \times n$, ô $(x, y)$ ứng với \ma{mapGrid[x][y]}, trong đó $x$ là chỉ số hàng
+(tăng xuống dưới) và $y$ là chỉ số cột (tăng sang phải). Mỗi ô là một đỉnh, đánh số
+$\text{id}(x, y) = x \cdot n + y$. Nhân vật đi theo 8 hướng, xét theo thứ tự cố định:
+
+\begin{bangbieu}{Tám hướng di chuyển và độ dời $(\Delta x, \Delta y)$}{tab:t4-huong}{Z Z Z Z}
+  \hangtieude \thead{Up} & \thead{Down} & \thead{Left} & \thead{Right} \\
+  \midrule
+  $(-1, 0)$ & $(+1, 0)$ & $(0, -1)$ & $(0, +1)$ \\
+  \midrule
+  \hangtieude \thead{Up-Left} & \thead{Up-Right} & \thead{Down-Left} & \thead{Down-Right} \\
+  \midrule
+  $(-1, -1)$ & $(-1, +1)$ & $(+1, -1)$ & $(+1, +1)$ \\
+\end{bangbieu}
+
+Có cung $(x, y) \to (x', y')$ khi và chỉ khi cả ba điều kiện sau thỏa:
+\begin{enumerate}
+  \item ô đích nằm trong lưới và không phải vật cản ($\ne 1$);
+  \item nếu là bước chéo $(\pm 1, \pm 1)$: \nhanmanh{luật cắt góc}, hai ô kề cạnh
+        $(x + \Delta x,\ y)$ và $(x,\ y + \Delta y)$ đều không phải vật cản;
+  \item ô xuất phát không phải vật cản.
+\end{enumerate}
+Chi phí phụ thuộc địa hình của ô \emph{được đi vào} và hướng đi:
+\begin{equation}
+  c(u, v) = \text{base}(v) \times \begin{cases} 1{,}5 & \text{nếu bước chéo} \\ 1 & \text{nếu bước thẳng} \end{cases},
+  \qquad \text{base}(v) = \begin{cases} 1{,}0 & \text{ô phẳng } (0) \\ 2{,}0 & \text{đầm lầy } (2) \end{cases}
+  \label{eq:t4-cost}
+\end{equation}
+Heuristic: Manhattan $\abs{x - x_g} + \abs{y - y_g}$ (\ma{mode} $1$) hoặc Chebyshev
+$\max(\abs{x - x_g}, \abs{y - y_g})$ (\ma{mode} $2$).
+
+\begin{khungma}{Algo.cpp (trích findGamePath)}{C++}
+for (int i = 0; i < 8; ++i) {
+    const Direction& d = DIRECTIONS[i];
+    int nx = x + d.dx;
+    int ny = y + d.dy;
+    if (!grid.contains(nx, ny) || mapGrid[nx][ny] == OBSTACLE) continue;
+    if (isDiagonal(d) && (mapGrid[nx][y] == OBSTACLE || mapGrid[x][ny] == OBSTACLE)) continue;
+    double cost = terrainCost(mapGrid[nx][ny]) * (isDiagonal(d) ? 1.5 : 1.0);
+    graph.addEdge(u, grid.id(nx, ny), cost);
+}
+\end{khungma}
+
+Danh sách kết quả có nút đầu tên \ma{"Start"}; mỗi nút sau mang nhãn của hướng đã dùng để đi vào
+ô đó, suy ra từ hiệu tọa độ giữa hai ô liên tiếp trên đường.
+
+\section{Tính chấp nhận được của hai heuristic}
+\label{sec:t4-h}
+
+\begin{dinhly}
+  Chebyshev nhất quán; Manhattan không chấp nhận được khi có bước chéo.
+\end{dinhly}
+
+\begin{loigiai}
+  Mỗi bước (thẳng hay chéo) làm $\max(\abs{\Delta x}, \abs{\Delta y})$ tới đích giảm tối đa 1,
+  trong khi chi phí mỗi bước ít nhất là $1$. Vậy $h_C(u) \le 1 + h_C(v) \le c(u, v) + h_C(v)$.
+  Với Manhattan, một bước chéo trên ô phẳng làm $h_M$ giảm $2$ nhưng chỉ tốn $1{,}5$, vi phạm
+  $h_M(u) \le c(u, v) + h_M(v)$; trên lưới trống $k \times k$, $h_M = 2(k - 1)$ trong khi
+  $h^\ast = 1{,}5(k - 1)$.
+\end{loigiai}
+
+\section{Vết thực thi từng bước}
+\label{sec:t4-vet}
+
+Xét lưới $4 \times 4$ ở \Hinh{fig:t4-luoi}, xuất phát $(0, 0)$, đích $(3, 3)$, \ma{mode} $= 2$
+(Chebyshev).
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[x=1.15cm, y=1.15cm]
+    \foreach \x/\y/\t in {0/0/0,0/1/0,0/2/0,0/3/0, 1/0/0,1/1/1,1/2/2,1/3/0,
+                          2/0/0,2/1/1,2/2/0,2/3/0, 3/0/0,3/1/0,3/2/0,3/3/0} {
+      \ifnum\t=1 \fill[bkxanhdam!80] (\y, -\x) rectangle ++(1, -1);
+      \else\ifnum\t=2 \fill[nau!35] (\y, -\x) rectangle ++(1, -1);
+      \else \fill[white] (\y, -\x) rectangle ++(1, -1); \fi\fi
+      \draw[bkxam!60] (\y, -\x) rectangle ++(1, -1);
+      \node[font=\tiny, text=bkxam, anchor=north west] at (\y, -\x) {(\x,\y)};
+    }
+    \draw[do, line width=2pt, -{Stealth[length=3mm]}]
+      (0.5, -0.5) -- (1.5, -0.5) -- (2.5, -0.5) -- (3.5, -1.5) -- (3.5, -2.5) -- (3.5, -3.5);
+    \draw[xanhduong, line width=1.4pt, dashed, -{Stealth[length=3mm]}]
+      (0.4, -0.6) -- (0.4, -3.4) -- (3.4, -3.4);
+    \node[font=\small\bfseries] at (0.5, -0.75) {S};
+    \node[font=\small\bfseries] at (3.5, -3.75) {G};
+    \node[anchor=west, font=\small, align=left] at (4.4, -1.2)
+      {\tikz\fill[bkxanhdam!80] (0,0) rectangle (0.3,0.3); vật cản (1)\\[3pt]
+       \tikz\fill[nau!35] (0,0) rectangle (0.3,0.3); đầm lầy (2)\\[3pt]
+       \tikz\draw[do, line width=2pt] (0,0) -- (0.4,0); Chebyshev, $g = 5{,}5$\\[3pt]
+       \tikz\draw[xanhduong, line width=1.4pt, dashed] (0,0) -- (0.4,0); Manhattan, $g = 6$};
+  \end{tikzpicture}
+  \caption{Lưới mẫu của Task 4 và hai đường tìm được}
+  \label{fig:t4-luoi}
+\end{figure}
+
+\Bang{tab:t4-vet} ghi lại từng lần mở rộng: các hướng ra ngoài lưới được lược bỏ, \sai{} là bước bị
+loại (kèm lý do), \dung{} là bước làm giảm $g$ của ô đích và được đưa vào \OPEN.
+
+\begin{longtable}{C{0.8cm} C{2.4cm} L{10.6cm}}
+  \caption{Vết A* Task 4 (Chebyshev): kiểm tra hướng, luật cắt góc và cập nhật chi phí}\label{tab:t4-vet}\\
+  \toprule
+  \hangtieude \thead{Vòng} & \thead{Mở rộng\\$(g; h; f)$} & \thead{Xét các hướng} \\
+  \midrule
+  \endfirsthead
+  \toprule
+  \hangtieude \thead{Vòng} & \thead{Mở rộng\\$(g; h; f)$} & \thead{Xét các hướng} \\
+  \midrule
+  \endhead
+  \bottomrule
+  \endfoot
+  1 & \makecell{$(0,0)$\\$(0;\ 3;\ 3)$} &
+    Down $(1,0)$: phẳng, $g = 1$, $f = 4$ \dung.\ \ Right $(0,1)$: $g = 1$, $f = 4$ \dung.\ \
+    Down-Right $(1,1)$: ô vật cản \sai. \\
+  \midrule
+  2 & \makecell{$(1,0)$\\$(1;\ 3;\ 4)$} &
+    Hòa $f = 4$, $h = 3$ với $(0,1)$; $(1,0)$ vào \OPEN{} trước nên được chọn.
+    Up $(0,0)$: $2 \ge 0$ \sai.\ \ Down $(2,0)$: $g = 2$, $f = 5$ \dung.\ \ Right $(1,1)$: vật cản \sai.\ \
+    Up-Right $(0,1)$: \quantrong{cắt góc}, ô kề $(1,1)$ là vật cản \sai.\ \ Down-Right $(2,1)$: vật cản \sai. \\
+  \midrule
+  3 & \makecell{$(0,1)$\\$(1;\ 3;\ 4)$} &
+    Down $(1,1)$: vật cản \sai.\ \ Left $(0,0)$: không tốt hơn \sai.\ \ Right $(0,2)$: $g = 2$, $f = 5$ \dung.\ \
+    Down-Left $(1,0)$ và Down-Right $(1,2)$: \quantrong{cắt góc} qua $(1,1)$ \sai. \\
+  \midrule
+  4 & \makecell{$(2,0)$\\$(2;\ 3;\ 5)$} &
+    Up: không tốt hơn \sai.\ \ Down $(3,0)$: $g = 3$, $f = 6$ \dung.\ \ Right $(2,1)$, Up-Right $(1,1)$: vật cản \sai.\ \
+    Down-Right $(3,1)$: \quantrong{cắt góc}, ô kề $(2,1)$ là vật cản \sai. \\
+  \midrule
+  5 & \makecell{$(0,2)$\\$(2;\ 3;\ 5)$} &
+    Down $(1,2)$: đầm lầy, $g = 2 + 2 = 4$, $f = 6$ \dung.\ \ Right $(0,3)$: $g = 3$, $f = 6$ \dung.\ \
+    Down-Left $(1,1)$: vật cản \sai.\ \
+    Down-Right $(1,3)$: ô kề $(1,2)$ là đầm lầy (không phải vật cản) và $(0,3)$ phẳng nên \nhanmanh{hợp lệ};
+    chi phí $1{,}0 \times 1{,}5$, $g = 3{,}5$, $f = 5{,}5$ \dung. \\
+  \midrule
+  6 & \makecell{$(1,3)$\\$(3{,}5;\ 2;\ 5{,}5)$} &
+    Up $(0,3)$: $4{,}5 \ge 3$ \sai.\ \ Down $(2,3)$: $g = 4{,}5$, $f = 5{,}5$ \dung.\ \
+    Left $(1,2)$: $3{,}5 + 2 = 5{,}5 \ge 4$ \sai.\ \ Up-Left $(0,2)$: không tốt hơn \sai.\ \
+    Down-Left $(2,2)$: hai ô kề $(2,3)$, $(1,2)$ không phải vật cản, $g = 5$, $f = 6$ \dung. \\
+  \midrule
+  7 & \makecell{$(2,3)$\\$(4{,}5;\ 1;\ 5{,}5)$} &
+    Down $(3,3)$: $g = 5{,}5$, $f = 5{,}5$ \dung.\ \ Left $(2,2)$: $5{,}5 \ge 5$ \sai.\ \
+    Up-Left $(1,2)$: hợp lệ nhưng $4{,}5 + 2 \times 1{,}5 = 7{,}5 \ge 4$ \sai.\ \
+    Down-Left $(3,2)$: hợp lệ, $g = 6$, $f = 7$ \dung. \\
+  \midrule
+  8 & \makecell{$(3,3)$\\$(5{,}5;\ 0;\ 5{,}5)$} & Đích được lấy ra, dừng sau 8 lần mở rộng. \\
+\end{longtable}
+
+\begin{ketqua}[Kết quả Task 4 (Chebyshev)]
+  Chuỗi hành động \ma{Start, Right, Right, Down-Right, Down, Down} với $g = 1 + 1 + 1{,}5 + 1 + 1 = 5{,}5$.
+  Bước chéo duy nhất đi \emph{cạnh} ô đầm lầy $(1,2)$ chứ không đi vào nó, nên vẫn tính giá ô phẳng.
+\end{ketqua}
+
+Với \ma{mode} $= 1$, Manhattan cho $h(0,0) = 6 > h^\ast = 5{,}5$. Mọi ô dọc mép trái và mép dưới có
+$f = 6$ và $h$ nhỏ dần, nên quy tắc phá hòa theo $h$ kéo tìm kiếm đi thẳng xuống rồi sang phải
+(\ma{Down}$\times 3$, \ma{Right}$\times 3$) và lấy đích ra với $g = 6$ sau 7 lần mở rộng, trước khi
+đường chéo $5{,}5$ kịp được phát hiện.
+
+\section{So sánh heuristic trên bản đồ ngẫu nhiên}
+\label{sec:t4-so-sanh}
+
+Bản đồ vuông, 20\% vật cản, 15\% đầm lầy, đi từ góc trên trái tới góc dưới phải.
+
+\begin{bangbieu}{Manhattan và Chebyshev trên bản đồ ngẫu nhiên (chi phí / số ô mở rộng / số bước)}{tab:t4-so-sanh}{C{2.6cm} Z Z}
+  \hangtieude \thead{Kích thước} & \thead{Manhattan} & \thead{Chebyshev (tối ưu)} \\
+  \midrule
+  $20 \times 20$ & \oxau 35,5 / 65 / 28  & \otot 34,0 / 193 / 24 \\
+  $30 \times 30$ & \oxau 52,0 / 104 / 42 & \otot 51,0 / 473 / 44 \\
+  $40 \times 40$ & 67,0 / 71 / 52        & \otot 67,0 / 823 / 52 \\
+\end{bangbieu}
+\nguonbang{\ma{make report-data}, hạt giống 7. Chi phí của Chebyshev trùng Dijkstra (kiểm thử 40 bản đồ).}
+
+Chebyshev luôn tối ưu nhưng mở rộng nhiều gấp 3 tới gần 12 lần do quá ``lạc quan'' (bỏ qua việc bước
+chéo đắt $1{,}5$ và đầm lầy đắt gấp đôi). Manhattan nhanh hơn rõ rệt và lệch chi phí tối đa
+khoảng $4{,}4\%$ ở các ví dụ trên. Lựa chọn phụ thuộc yêu cầu: trò chơi thời gian thực có thể chấp
+nhận Manhattan, còn khi cần đường ngắn nhất phải dùng Chebyshev.

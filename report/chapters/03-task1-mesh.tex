@@ -1,0 +1,169 @@
+% ==============================================================================
+% CHƯƠNG 3: TASK 1 — ĐỊNH TUYẾN MẠNG MESH CÓ PHẠT TẮC NGHẼN
+% ==============================================================================
+\chapter{Task 1: Định tuyến mạng mesh có phạt tắc nghẽn}
+\label{chap:task1}
+
+\section{Mô hình hóa}
+\label{sec:t1-mo-hinh}
+
+Mạng được cho bởi ma trận \ma{weightMatrix[100][100]}; mỗi phần tử $L(u, v) > 0$ là độ trễ cơ
+sở của liên kết $u \to v$, phần tử bằng $0$ nghĩa là không có liên kết. Ta dựng đồ thị có hướng
+$G = (V, E)$ với $V = \{0, \dots, 99\}$ và
+\[
+  E = \{(u, v) : u \ne v,\ L(u, v) > 0\}.
+\]
+Chi phí đi vào $v$ được cộng thêm phạt tắc nghẽn tỉ lệ với bậc của $v$:
+\begin{equation}
+  \NoiBat{c(u, v) = L(u, v) + 0{,}1 \cdot \degr(v)}
+  \label{eq:t1-cost}
+\end{equation}
+và $g(n)$ là tổng các $c(u, v)$ dọc đường đi từ nguồn tới $n$.
+
+\section{Tính bậc của đỉnh từ ma trận kề}
+\label{sec:t1-bac}
+
+Bậc của $v$ là số liên kết đang hoạt động xuất phát từ $v$, tức số phần tử dương trên hàng $v$
+của ma trận:
+\begin{equation}
+  \degr(v) = \big|\{\, u \in V : u \ne v,\ L(v, u) > 0 \,\}\big|.
+  \label{eq:t1-deg}
+\end{equation}
+Với mạng vô hướng (ma trận đối xứng), đại lượng này trùng với bậc thông thường của đồ thị
+\cite{rosen2019}. Phần tử đường chéo bị bỏ qua để một giá trị $L(v, v) \ne 0$ lỡ có trong dữ
+liệu không bị đếm như một kết nối.
+
+Thay vì đếm lại $\degr(v)$ mỗi khi nới lỏng một cung, chương trình duyệt ma trận \emph{một lần}
+trước khi tìm kiếm ($O(|V|^2) = 10^4$ phép so sánh), lưu kết quả vào mảng \ma{degree}, rồi dùng
+nó để tính sẵn chi phí \eqref{eq:t1-cost} của mọi cung khi dựng danh sách kề. Trong quá trình A*,
+việc lấy chi phí một cung vì thế chỉ tốn $O(1)$.
+
+\begin{khungma}{Algo.cpp (trích findMeshPath)}{C++}
+std::vector<int> degree(MAX_NODES, 0);
+for (int u = 0; u < MAX_NODES; ++u)
+    for (int v = 0; v < MAX_NODES; ++v)
+        if (u != v && weightMatrix[u][v] > 0) ++degree[u];
+
+for (int u = 0; u < MAX_NODES; ++u)
+    for (int v = 0; v < MAX_NODES; ++v) {
+        if (u == v || weightMatrix[u][v] <= 0) continue;
+        double cost = weightMatrix[u][v] + 0.1 * degree[v];
+        graph.addEdge(u, v, cost);
+        minStepCost = std::min(minStepCost, cost);
+    }
+\end{khungma}
+
+\section{Xây dựng heuristic}
+\label{sec:t1-h}
+
+Mạng mesh không có tọa độ nên không dùng được metric hình học. Ta xây dựng cận dưới từ hai đại
+lượng tính được trên chính đồ thị:
+\begin{itemize}
+  \item $\hops(v)$: số cung ít nhất từ $v$ tới đích, tìm bằng BFS trên đồ thị đảo chiều xuất
+        phát từ đích, $O(|V| + |E|)$;
+  \item $c_{\min} = \min_{(u, v) \in E} c(u, v)$: chi phí cung nhỏ nhất của toàn mạng.
+\end{itemize}
+\begin{equation}
+  \NoiBat{h(v) = \hops(v) \cdot c_{\min}}, \qquad
+  h(v) = +\infty \text{ nếu } v \text{ không tới được đích}.
+  \label{eq:t1-h}
+\end{equation}
+
+\begin{dinhly}
+  Heuristic \eqref{eq:t1-h} nhất quán, do đó chấp nhận được.
+\end{dinhly}
+
+\begin{loigiai}
+  $h(t) = 0 \cdot c_{\min} = 0$. Với mỗi cung $(u, v)$, một đường ngắn nhất (theo số cung) từ
+  $v$ tới đích nối sau cung $(u, v)$ cho $\hops(u) \le \hops(v) + 1$. Vì $c(u, v) \ge c_{\min}$,
+  \[
+    h(u) = \hops(u)\, c_{\min} \le c_{\min} + \hops(v)\, c_{\min} \le c(u, v) + h(v).
+  \]
+  Nếu $v$ không tới được đích thì vế phải bằng $+\infty$; nếu $u$ không tới được đích thì mọi
+  đỉnh kề sau $u$ cũng vậy và $u$ không bao giờ nằm trên lời giải.
+\end{loigiai}
+
+Heuristic này mạnh hơn $h \equiv 0$ của Dijkstra (đỉnh ở xa đích theo số bước bị đẩy lùi) nhưng
+không bao giờ đánh giá quá chi phí thật. Nếu $\hops(\text{nguồn})$ không xác định, hàm trả về
+\ma{nullptr} ngay mà không cần chạy A*.
+
+\section{Vết thực thi trên mạng mẫu}
+\label{sec:t1-vet}
+
+Xét mạng vô hướng 5 nút ở \Hinh{fig:t1-mang} (cũng là ví dụ trong \ma{main.cpp}), tìm đường từ
+nút $0$ tới nút $4$.
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[node distance=2.4cm]
+    \node[dinhduong] (n0) at (0, 0) {0};
+    \node[dinhduong] (n1) at (2.4, 1.5) {1};
+    \node[dinhduong] (n2) at (2.4, -1.5) {2};
+    \node[dinhduong] (n3) at (5.2, 0) {3};
+    \node[dinhduong] (n4) at (8, 0) {4};
+    \draw[line width=0.6pt, bkxam] (n0) -- node[trongso] {4} (n2);
+    \draw[line width=0.6pt, bkxam] (n1) -- node[trongso] {5} (n3);
+    \draw[line width=0.6pt, bkxam] (n2) to[bend right=25] node[trongso] {6} (n4);
+    \draw[line width=1.4pt, do] (n0) -- node[trongso] {1} (n1);
+    \draw[line width=1.4pt, do] (n1) -- node[trongso] {1} (n2);
+    \draw[line width=1.4pt, do] (n2) -- node[trongso] {1} (n3);
+    \draw[line width=1.4pt, do] (n3) -- node[trongso] {2} (n4);
+  \end{tikzpicture}
+  \caption{Mạng mẫu của Task 1 (số trên cạnh là $L(u,v)$, đường tìm được tô đỏ)}
+  \label{fig:t1-mang}
+\end{figure}
+
+\paragraph{Bước 1 — bậc, chi phí cung và heuristic} Áp dụng \eqref{eq:t1-deg} và
+\eqref{eq:t1-cost}, phạt đi vào mỗi nút là $0{,}1\cdot\degr(v)$. Cung rẻ nhất là
+$1 \to 0$ với $c = 1 + 0{,}2 = 1{,}2$ nên $c_{\min} = 1{,}2$. BFS ngược từ nút 4 cho
+$\hops = (2, 2, 1, 1, 0)$.
+
+\begin{bangbieu}{Bậc, phạt tắc nghẽn và heuristic của mạng mẫu}{tab:t1-deg}{C{1.6cm} Y C{1.6cm} C{2cm} C{1.6cm} C{1.6cm}}
+  \hangtieude \thead{Nút $v$} & \thead{Kề với} & \thead{$\degr(v)$} & \thead{Phạt vào $v$} & \thead{$\hops(v)$} & \thead{$h(v)$} \\
+  \midrule
+  0 & 1, 2       & 2 & 0,2 & 2 & 2,4 \\
+  1 & 0, 2, 3    & 3 & 0,3 & 2 & 2,4 \\
+  2 & 0, 1, 3, 4 & 4 & 0,4 & 1 & 1,2 \\
+  3 & 1, 2, 4    & 3 & 0,3 & 1 & 1,2 \\
+  4 & 2, 3       & 2 & 0,2 & 0 & 0   \\
+\end{bangbieu}
+
+\paragraph{Bước 2 — các vòng lặp A*} Mỗi phần tử của \OPEN{} được viết dưới dạng
+$v\,(g, h, f)$; phần tử đã lỗi thời do bị thay bằng $g$ tốt hơn được ghi màu xám kèm chỉ số ``cũ.
+
+\begin{bangbieu}{Vết thực thi A* cho Task 1, nguồn 0, đích 4}{tab:t1-vet}{C{0.8cm} C{2.6cm} Y L{4.3cm}}
+  \hangtieude \thead{Vòng} & \thead{Mở rộng\\$v\,(g, h, f)$} & \thead{Nới lỏng các cung ra} & \thead{\OPEN{} sau vòng lặp} \\
+  \midrule
+  1 & $0\,(0;\ 2{,}4;\ 2{,}4)$ &
+      $1$: $0 + 1{,}3 = 1{,}3$ \dung;\ \ $2$: $0 + 4{,}4 = 4{,}4$ \dung &
+      $1\,(1{,}3;\ 2{,}4;\ 3{,}7)$, $2\,(4{,}4;\ 1{,}2;\ 5{,}6)$ \\
+  2 & $1\,(1{,}3;\ 2{,}4;\ 3{,}7)$ &
+      $0$: $2{,}5 \ge 0$ \sai;\ \ $2$: $1{,}3 + 1{,}4 = 2{,}7 < 4{,}4$ \dung;\ \ $3$: $1{,}3 + 5{,}3 = 6{,}6$ \dung &
+      $2\,(2{,}7;\ 1{,}2;\ 3{,}9)$, $3\,(6{,}6;\ 1{,}2;\ 7{,}8)$, \cu{$2\,(4{,}4)$} \\
+  3 & $2\,(2{,}7;\ 1{,}2;\ 3{,}9)$ &
+      $0, 1$: không tốt hơn \sai;\ \ $3$: $2{,}7 + 1{,}3 = 4{,}0 < 6{,}6$ \dung;\ \ $4$: $2{,}7 + 6{,}2 = 8{,}9$ \dung &
+      $3\,(4{,}0;\ 1{,}2;\ 5{,}2)$, $4\,(8{,}9;\ 0;\ 8{,}9)$, \cu{$3\,(6{,}6)$} \\
+  4 & $3\,(4{,}0;\ 1{,}2;\ 5{,}2)$ &
+      $1, 2$: không tốt hơn \sai;\ \ $4$: $4{,}0 + 2{,}2 = 6{,}2 < 8{,}9$ \dung &
+      $4\,(6{,}2;\ 0;\ 6{,}2)$, \cu{$4\,(8{,}9)$} \\
+  5 & $4\,(6{,}2;\ 0;\ 6{,}2)$ & Đích được lấy ra, dừng & --- \\
+\end{bangbieu}
+
+\begin{ketqua}[Kết quả Task 1 trên mạng mẫu]
+  Đường đi $0 \to 1 \to 2 \to 3 \to 4$ với chi phí $g = 6{,}2$, gồm độ trễ cơ sở
+  $1 + 1 + 1 + 2 = 5$ và phạt tắc nghẽn $0{,}3 + 0{,}4 + 0{,}3 + 0{,}2 = 1{,}2$. A* mở rộng đúng
+  5 nút, khớp với đầu ra của chương trình:
+  \begin{center}\small\ttfamily
+  \begin{tabular}{l}
+    Node: 0 | f: 2.4 | g: 0 | h: 2.4\\
+    Node: 1 | f: 3.7 | g: 1.3 | h: 2.4\\
+    Node: 2 | f: 3.9 | g: 2.7 | h: 1.2\\
+    Node: 3 | f: 5.2 | g: 4 | h: 1.2\\
+    Node: 4 | f: 6.2 | g: 6.2 | h: 0
+  \end{tabular}
+  \end{center}
+\end{ketqua}
+
+Có thể thấy giá trị $f$ của các nút được mở rộng là $2{,}4 \le 3{,}7 \le 3{,}9 \le 5{,}2 \le
+6{,}2$, đúng tính chất không giảm của heuristic nhất quán; không nút nào bị mở rộng hai lần. Cung
+trực tiếp $2 \to 4$ có độ trễ $6$ bị loại vì $f = 8{,}9$ lớn hơn chi phí của đường qua nút 3.

@@ -1,0 +1,54 @@
+% !TEX program = xelatex
+% ==============================================================================
+%  BÁO CÁO BÀI TẬP LỚN CO1007 — A* ALGORITHMS
+%  Mẫu: NexoZegknost/LaTeX-Template (HCMUT_01_Report)
+%  Biên dịch: XeLaTeX  (latexmk / compile.bat / make)
+% ==============================================================================
+\documentclass[a4paper,12pt,oneside]{report}
+
+% ---------- 0. THÔNG TIN SINH VIÊN (điền vào hai dòng dưới) ------------------
+\newcommand{\HoTen}{}
+\newcommand{\MSSV}{}
+
+% ---------- 1. CHẾ ĐỘ BÁO CÁO -----------------------------------------------
+\input{config/mode}
+\BaoCaoCaNhan
+
+% ---------- 2. THÔNG TIN & CẤU HÌNH ------------------------------------------
+\input{config/metadata}
+\input{config/preamble}
+\input{config/colors}
+\input{config/style}
+\input{config/commands}
+\input{config/report}
+
+\begin{document}
+
+\input{frontmatter/trang-bia}
+
+\BatDauPhanDau
+\input{frontmatter/loi-cam-doan}
+\input{frontmatter/loi-cam-on}
+\input{frontmatter/tom-tat}
+
+\MucLuc
+\DanhMucHinh
+\DanhMucBang
+\input{frontmatter/viet-tat}
+
+\BatDauNoiDung
+\input{chapters/01-gioi-thieu}
+\input{chapters/02-co-so-va-thiet-ke}
+\input{chapters/03-task1-mesh}
+\input{chapters/04-task2-auv}
+\input{chapters/05-task3-xac-suat}
+\input{chapters/06-task4-game}
+\input{chapters/07-task5-pcb}
+\input{chapters/08-ket-luan}
+
+\TaiLieuThamKhao{references/references}
+
+\BatDauPhuLuc
+\input{appendix/A-huong-dan-chay}
+
+\end{document}

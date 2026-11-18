@@ -1,0 +1,169 @@
+% ==============================================================================
+% CHƯƠNG 2: CƠ SỞ LÝ THUYẾT VÀ THIẾT KẾ CHUNG
+% ==============================================================================
+\chapter{Cơ sở lý thuyết và thiết kế chung}
+\label{chap:co-so}
+
+\section{Đồ thị, đường đi và bài toán đường đi ngắn nhất}
+\label{sec:do-thi}
+
+\begin{dinhnghia}[Đồ thị có hướng có trọng số]
+  Đồ thị có hướng có trọng số là bộ $G = (V, E, c)$ với $V$ là tập đỉnh hữu hạn,
+  $E \subseteq V \times V$ là tập cung và $c : E \to \R_{\ge 0}$ gán cho mỗi cung $(u, v)$
+  một chi phí không âm $c(u, v)$.
+\end{dinhnghia}
+
+Một \thuatngu{đường đi}[path] từ $s$ tới $t$ là dãy đỉnh $P = (v_0, v_1, \dots, v_k)$ với
+$v_0 = s$, $v_k = t$ và $(v_{i-1}, v_i) \in E$ với mọi $i$ \cite{rosen2019}. Chi phí của đường
+đi là
+\begin{equation}
+  c(P) = \sum_{i=1}^{k} c(v_{i-1}, v_i).
+  \label{eq:chi-phi-duong}
+\end{equation}
+Bài toán đường đi ngắn nhất tìm $P^\ast$ sao cho $c(P^\ast) = h^\ast(s)$, trong đó
+$h^\ast(v)$ là chi phí nhỏ nhất từ $v$ tới đích $t$ (bằng $+\infty$ nếu không tới được).
+
+\section{Thuật toán A*}
+\label{sec:astar}
+
+A* duy trì tập biên \OPEN{} các đỉnh đã sinh nhưng chưa mở rộng, và luôn chọn đỉnh có
+\begin{equation}
+  \NoiBat{f(n) = g(n) + h(n)}
+  \label{eq:f}
+\end{equation}
+nhỏ nhất, trong đó $g(n)$ là chi phí tốt nhất đã biết từ $s$ tới $n$ và $h(n)$ là ước lượng
+chi phí còn lại từ $n$ tới đích \cite{hart1968, russell2021}.
+
+\begin{dinhnghia}[Heuristic chấp nhận được và nhất quán]
+  Heuristic $h$ là \nhanmanh{chấp nhận được} nếu $h(n) \le h^\ast(n)$ với mọi $n$, và là
+  \nhanmanh{nhất quán} nếu $h(t) = 0$ và $h(u) \le c(u, v) + h(v)$ với mọi cung $(u, v) \in E$.
+\end{dinhnghia}
+
+\begin{dinhly}[Tính tối ưu của A*]
+  \label{dl:toi-uu}
+  (i) Mọi heuristic nhất quán đều chấp nhận được. (ii) Nếu $h$ chấp nhận được thì A* (có mở
+  lại đỉnh) trả về đường đi tối ưu. (iii) Nếu $h$ nhất quán thì giá trị $f$ của các đỉnh được
+  mở rộng không giảm và mỗi đỉnh được mở rộng tối đa một lần.
+\end{dinhly}
+
+\begin{loigiai}[Chứng minh (i)]
+  Xét đường tối ưu $n = v_0, v_1, \dots, v_k = t$. Cộng các bất đẳng thức
+  $h(v_{i-1}) - h(v_i) \le c(v_{i-1}, v_i)$ với $i = 1..k$ ta được
+  $h(n) - h(t) \le h^\ast(n)$, mà $h(t) = 0$ nên $h(n) \le h^\ast(n)$. Nếu $n$ không tới được
+  đích thì $h^\ast(n) = +\infty$ và bất đẳng thức hiển nhiên đúng.
+\end{loigiai}
+
+Phần (ii) và (iii) là kết quả kinh điển của Hart, Nilsson và Raphael \cite{hart1968}; với
+$h \equiv 0$, A* trở thành thuật toán Dijkstra.
+
+\section{Các metric không gian}
+\label{sec:metric}
+
+Với hiệu tọa độ $\Delta = (\Delta_1, \dots, \Delta_d)$, $d \in \{2, 3\}$, báo cáo dùng ba
+metric:
+\begin{align}
+  h_{M} &= \sum_{i} \abs{\Delta_i}, &
+  h_{E} &= \sqrt{\textstyle\sum_{i} \Delta_i^2}, &
+  h_{C} &= \max_{i} \abs{\Delta_i}.
+  \label{eq:metric}
+\end{align}
+
+\begin{dinhly}[Quan hệ giữa ba metric]
+  \label{dl:metric}
+  Với mọi $\Delta \in \R^d$: $\ h_C \le h_E \le h_M \le d \cdot h_C$ và $h_E \le \sqrt{d}\, h_C$.
+\end{dinhly}
+
+\begin{loigiai}
+  Đặt $a = \max_i \abs{\Delta_i}$. Ta có $a^2 \le \sum \Delta_i^2 \le d a^2$ nên
+  $h_C \le h_E \le \sqrt{d}\, h_C$. Mặt khác
+  $\big(\sum \abs{\Delta_i}\big)^2 = \sum \Delta_i^2 + 2\sum_{i<j}\abs{\Delta_i}\abs{\Delta_j}
+  \ge \sum \Delta_i^2$ nên $h_E \le h_M$, và $h_M \le d \cdot a$.
+\end{loigiai}
+
+\begin{ghichu}[Hệ quả dùng trong các task]
+  Nếu chi phí mỗi cung không nhỏ hơn khoảng cách theo một metric giữa hai đầu cung thì, nhờ bất
+  đẳng thức tam giác, metric đó là heuristic nhất quán; mọi metric nhỏ hơn nó theo
+  Định lý~\ref{dl:metric} cũng nhất quán. Metric lớn hơn có thể đánh giá quá chi phí
+  thật: tìm kiếm nhanh hơn nhưng mất bảo đảm tối ưu.
+\end{ghichu}
+
+\section{Cấu trúc dữ liệu chung \ma{PathNode}}
+\label{sec:pathnode}
+
+Lời giải của mọi task được biểu diễn bằng danh sách liên kết đơn theo đúng đặc tả. Ngoài năm
+trường bắt buộc, struct có thêm trường \ma{pSafe} đặt \emph{sau} \ma{next} để lưu xác suất an
+toàn tích lũy của Task~3; vị trí này giữ nguyên thứ tự khởi tạo của năm trường bắt buộc nên
+tương thích với hàm \ma{printPath} của LMS.
+
+\begin{khungma}{PathNode.h}{C++}
+struct PathNode {
+    std::string name;
+    double f;
+    double g;
+    double h;
+    PathNode* next;
+    double pSafe;
+};
+
+PathNode* createPathNode(const std::string& name, double g, double h);
+void appendPathNode(PathNode*& head, PathNode*& tail, PathNode* node);
+int pathLength(const PathNode* head);
+const PathNode* pathTail(const PathNode* head);
+void freePath(PathNode* head);
+\end{khungma}
+
+Hàm \ma{createPathNode} luôn đặt $f = g + h$ nên ba giá trị không thể lệch nhau; nối đuôi dùng
+con trỏ \ma{tail} nên dựng danh sách $k$ nút tốn $O(k)$.
+
+\section{Lõi A* dùng chung}
+\label{sec:loi}
+
+Cả năm hàm đều dựng một đồ thị tường minh \ma{astar::Graph} gồm danh sách kề và một mảng
+$h[v]$, sau đó gọi cùng hàm \ma{astar::search}. Nhờ vậy phần khác nhau giữa các task chỉ còn là
+\emph{cách dựng đồ thị}, còn phần tìm kiếm được viết và kiểm thử một lần.
+
+\begin{lstlisting}[style=gia, caption={Giả mã lõi tìm kiếm \ma{astar::search}}, label={lst:search}]
+function Search($G$, $s$, Goal)
+    $g[v] \gets +\infty$ for each $v$;  $g[s] \gets 0$;  parent$[s] \gets$ nil
+    push $(s, g = 0, h[s])$ into OPEN
+    while OPEN not empty
+        $(u, g_u) \gets$ pop entry with smallest ($f$, then $h$, then insertion order)
+        if $g_u > g[u]$ then continue            // stale entry (lazy deletion)
+        if $u \in$ Goal then return path rebuilt from parent
+        for each arc $(u, v)$ with cost $c$
+            if $g[u] + c < g[v]$ then
+                $g[v] \gets g[u] + c$;  parent$[v] \gets u$
+                push $(v, g[v], h[v])$ into OPEN   // may re-open $v$
+    return no path
+\end{lstlisting}
+
+Các quyết định thiết kế chính:
+\begin{dssao}
+  \item \textbf{Hàng đợi ưu tiên.} Môi trường không cho dùng \ma{<queue>}, nên \OPEN{} là đống
+        nhị phân trên \ma{std::vector} với \ma{std::push_heap}/\ma{std::pop_heap} của
+        \ma{<algorithm>}; mỗi thao tác tốn $O(\log |\OPEN|)$.
+  \item \textbf{Phá hòa cố định.} Khi $f$ bằng nhau (sai số $10^{-9}$), ưu tiên $h$ nhỏ hơn
+        (gần đích hơn), sau đó ưu tiên phần tử được đưa vào trước. Kết quả vì thế tất định.
+  \item \textbf{Xóa lười.} Thay vì giảm khóa, mỗi lần cải thiện $g[v]$ ta đẩy một bản ghi mới;
+        bản ghi cũ bị bỏ qua khi lấy ra vì $g_u > g[u]$.
+  \item \textbf{Cho phép mở lại.} Không dùng tập đóng: đỉnh đã mở rộng vẫn được đưa lại vào
+        \OPEN{} nếu tìm được $g$ tốt hơn. Với heuristic nhất quán điều này không bao giờ xảy ra
+        (Định lý~\ref{dl:toi-uu}(iii)); với heuristic chỉ chấp nhận được, nó bảo đảm tính tối ưu
+        (Định lý~\ref{dl:toi-uu}(ii)).
+  \item \textbf{Đầu vào không hợp lệ.} Chỉ số ngoài phạm vi, \ma{mode} sai, điểm đầu/cuối là
+        vật cản hoặc không có đường đi đều trả về \ma{nullptr}. Khi điểm đầu trùng đích, danh
+        sách chỉ có một nút với $g = 0$.
+\end{dssao}
+
+Với heuristic nhất quán, mỗi đỉnh được mở rộng không quá một lần và mỗi cung được nới lỏng
+không quá một lần, nên độ phức tạp là $O\big((|V| + |E|)\log |V|\big)$ thời gian và
+$O(|V| + |E|)$ bộ nhớ \cite{cormen2022}.
+
+\section{Phương pháp kiểm chứng}
+\label{sec:kiem-chung}
+
+Bộ kiểm thử trong \ma{tests/} gồm 23 ca: các ví dụ tính tay cho từng task, các trường hợp biên
+(điểm đầu trùng đích, không có đường, chỉ số và chế độ không hợp lệ) và các phép thử ngẫu nhiên
+so sánh chi phí của A* với Dijkstra cài độc lập cho Task~1 (30 mạng), Task~4 với Chebyshev
+(40 bản đồ) và Task~5 (30 bảng mạch). Script \ma{check_headers.sh} bảo đảm mã nộp chỉ dùng sáu
+thư viện được phép, và GitHub Actions chạy lại toàn bộ ở chuẩn C++11 và C++17 sau mỗi lần đẩy mã.

@@ -1,0 +1,67 @@
+% ==============================================================================
+% CHƯƠNG 1: GIỚI THIỆU
+% ==============================================================================
+\chapter{Giới thiệu}
+\label{chap:gioi-thieu}
+
+\section{Bối cảnh và yêu cầu}
+\label{sec:boi-canh}
+
+Bài toán tìm đường đi có chi phí nhỏ nhất giữa hai đỉnh của một đồ thị có trọng số xuất hiện
+trong định tuyến mạng, điều hướng robot, trò chơi điện tử và thiết kế vi mạch. Thuật toán
+\thuatngu{A*}[A-star] \cite{hart1968} kết hợp chi phí thực đã đi $g(n)$ với ước lượng chi phí
+còn lại $h(n)$ để định hướng tìm kiếm về phía đích, nhờ đó thường mở rộng ít đỉnh hơn hẳn
+thuật toán Dijkstra \cite{dijkstra1959} mà vẫn giữ được tính tối ưu khi heuristic chấp nhận được.
+
+Đề bài \cite{de2026} yêu cầu cài đặt A* bằng \Cpp{} cho năm bài toán, chỉ dùng các thư viện
+\ma{<iostream>}, \ma{<fstream>}, \ma{<string>}, \ma{<cmath>}, \ma{<vector>} và
+\ma{<algorithm>} của môi trường CodeRunner. Mỗi hàm trả về con trỏ tới đầu một danh sách liên
+kết \ma{PathNode} chứa tên nút cùng các giá trị $f(n)$, $g(n)$, $h(n)$ theo thứ tự từ điểm
+xuất phát tới đích.
+
+\begin{bangbieu}{Năm bài toán và hàm tương ứng}{tab:tong-quan}{C{1cm} L{5.2cm} Y}
+  \hangtieude \thead{Task} & \thead{Bài toán} & \thead{Hàm} \\
+  \midrule
+  1 & Định tuyến mạng mesh có phạt tắc nghẽn & \ma{findMeshPath} \\
+  2 & Dẫn đường AUV trong không gian 3D       & \ma{findAUVPath} \\
+  3 & Tìm đường dưới rủi ro xác suất          & \ma{findProbabilisticPath} \\
+  4 & Nhân vật game trên bản đồ nhiều địa hình & \ma{findGamePath} \\
+  5 & Đi dây PCB có phạt bẻ góc               & \ma{findPCBPath} \\
+\end{bangbieu}
+
+\section{Mục tiêu}
+\label{sec:muc-tieu}
+
+\begin{itemize}
+  \item Mô hình hóa từng bài toán thành đồ thị có hướng có trọng số không âm và chứng minh
+        các tính chất cần thiết của hàm chi phí và heuristic.
+  \item Xây dựng \nhanmanh{một lõi A* dùng chung} cho cả năm bài, tuân thủ ràng buộc thư viện.
+  \item Đáp ứng các yêu cầu báo cáo riêng của từng task: vết thực thi bằng tay, so sánh
+        heuristic, phân tích tham số $\lambda$ và mô tả biến đổi lưới sang đồ thị.
+  \item Kiểm chứng tính đúng đắn bằng kiểm thử tự động và đối chiếu với Dijkstra.
+\end{itemize}
+
+\section{Tổ chức mã nguồn}
+\label{sec:to-chuc}
+
+Mã nguồn được quản lý bằng Git, chia thành các thư mục theo vai trò:
+
+\begin{khungbash}[Cấu trúc kho mã A-star-Algorithms]
+src/       PathNode.h  PathNode.cpp  Algo.h  Algo.cpp  main.cpp
+tests/     bộ kiểm thử tự viết (23 ca) + oracle Dijkstra
+tools/     report_data.cpp: sinh vết thực thi và số liệu cho báo cáo
+docs/      MILESTONES.md  DESIGN.md  sample_output.txt  report_data.txt
+report/    mã nguồn LaTeX của báo cáo này
+scripts/   check_headers.sh  package.sh
+\end{khungbash}
+
+Năm tệp trong \ma{src/} là các tệp nộp bài; \ma{make test} vừa kiểm tra danh sách thư viện
+được phép vừa chạy toàn bộ kiểm thử. Mọi bảng số và vết thực thi trong báo cáo được sinh bởi
+\ma{make report-data}, do đó có thể tái lập chính xác (\PhuLuc{app:huong-dan}).
+
+\section{Bố cục báo cáo}
+\label{sec:bo-cuc}
+
+\Chuong{chap:co-so} trình bày cơ sở lý thuyết và thiết kế lõi A* dùng chung. Các chương
+\ref{chap:task1}--\ref{chap:task5} lần lượt giải quyết năm task, mỗi chương gồm mô hình
+hóa, cài đặt và phần trả lời yêu cầu báo cáo của task đó. \Chuong{chap:ket-luan} tổng kết.

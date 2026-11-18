@@ -1,0 +1,46 @@
+% ==============================================================================
+% CHƯƠNG 8: KẾT LUẬN
+% ==============================================================================
+\chapter{Kết luận}
+\label{chap:ket-luan}
+
+\section{Kết quả đạt được}
+\label{sec:kl-ket-qua}
+
+\begin{dsdung}
+  \item Cài đặt đủ năm hàm \ma{findMeshPath}, \ma{findAUVPath}, \ma{findProbabilisticPath},
+        \ma{findGamePath}, \ma{findPCBPath} đúng chữ ký của đề, chỉ dùng sáu thư viện được phép,
+        biên dịch sạch ở C++11 đến C++20.
+  \item Quy cả năm bài toán về một đồ thị có hướng có trọng số không âm và một lõi A* dùng chung;
+        phí bẻ góc của Task~5 được xử lý bằng đồ thị trạng thái $(\text{ô}, \text{hướng})$.
+  \item Chứng minh tính nhất quán của heuristic số bước $\times c_{\min}$ (Task~1), Chebyshev
+        (Task~4), Manhattan (Task~5), và điều kiện $\alpha \ge 1$ cho Euclid/Chebyshev (Task~2).
+  \item Trả lời các yêu cầu báo cáo bằng vết thực thi và số liệu sinh tự động, có thể tái lập.
+\end{dsdung}
+
+\begin{bangbieu}{Tổng hợp heuristic theo từng task}{tab:kl-tong-hop}{C{1cm} L{3.4cm} Y}
+  \hangtieude \thead{Task} & \thead{Heuristic} & \thead{Tính chất} \\
+  \midrule
+  1 & $\hops(v) \cdot c_{\min}$ & \otot Nhất quán, luôn tối ưu \\
+  2 & Manhattan / Euclid / Chebyshev 3D & Euclid, Chebyshev nhất quán khi $\alpha \ge 1$; Manhattan có thể lệch \\
+  3 & Manhattan / Euclid 2D & Euclid nhất quán khi $d(u, v) \ge$ khoảng cách thẳng, với mọi $\lambda$ \\
+  4 & Manhattan / Chebyshev & \otot Chebyshev nhất quán; \oxau Manhattan đánh giá quá do bước chéo \\
+  5 & Manhattan / Chebyshev & \otot Cả hai nhất quán; Manhattan mở rộng ít hơn \\
+\end{bangbieu}
+
+\section{Hạn chế và hướng phát triển}
+\label{sec:kl-han-che}
+
+\begin{dssai}
+  \item Quy tắc phá hòa ($f$, rồi $h$, rồi thứ tự vào \OPEN) và cách đặt tên nút (chỉ số, hướng,
+        tọa độ) là lựa chọn hợp lý khi đề chưa quy định; cần đối chiếu lại với testcase LMS khi
+        cổng nộp bài mở.
+  \item Ở Task~2 và Task~3, heuristic theo đúng công thức của đề có thể đánh giá quá khi đơn vị chi
+        phí không gắn với tọa độ, nên không bảo đảm tối ưu.
+\end{dssai}
+
+Một số cải tiến có thể làm thêm: nhân heuristic với hệ số $\alpha$ của \eqref{eq:t2-alpha} để
+khôi phục tính chấp nhận được; dùng chi phí $-\ln(1 - P_{\text{risk}})$ nếu muốn tối đa hóa chính
+xác $P_{\text{safe}}$ ở Task~3; cộng thêm $B$ vào heuristic của Task~5 khi ô ra không nằm trên tia thẳng
+theo hướng hiện tại (ở điểm xuất phát: không cùng hàng, cùng cột), vì khi đó chắc chắn còn ít nhất
+một lần bẻ góc.

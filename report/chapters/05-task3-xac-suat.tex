@@ -1,0 +1,175 @@
+% ==============================================================================
+% CHƯƠNG 5: TASK 3 — TÌM ĐƯỜNG DƯỚI RỦI RO XÁC SUẤT
+% ==============================================================================
+\chapter{Task 3: Tìm đường dưới rủi ro xác suất}
+\label{chap:task3}
+
+\section{Mô hình hóa}
+\label{sec:t3-mo-hinh}
+
+Mỗi cung $(u, v)$ có độ dài $d(u, v) > 0$ (\ma{distMatrix}) và xác suất sự cố
+$P_{\text{risk}}(u, v) \in [0, 1)$ (\ma{riskMatrix}). Với hệ số phạt $\lambda \ge 0$, chi phí kỳ
+vọng của một cung và của cả đường đi là
+\begin{equation}
+  c_\lambda(u, v) = d(u, v) + \lambda\, P_{\text{risk}}(u, v), \qquad
+  g(n) = \sum_{(u, v) \in \text{path}} \big[d(u, v) + \lambda\, P_{\text{risk}}(u, v)\big].
+  \label{eq:t3-cost}
+\end{equation}
+Có thể hiểu $\lambda$ là ``giá'' của một sự cố: nếu sự cố trên cung $(u, v)$ gây thiệt hại
+$\lambda$ thì thiệt hại kỳ vọng là $\lambda P_{\text{risk}}(u, v)$, nên $g$ là tổng độ dài cộng
+thiệt hại kỳ vọng. Giả sử các sự cố độc lập, xác suất đi trọn đường mà không gặp sự cố là
+\begin{equation}
+  \NoiBat{P_{\text{safe}}(\text{path}) = \prod_{(u, v) \in \text{path}} \big(1 - P_{\text{risk}}(u, v)\big)}.
+  \label{eq:t3-psafe}
+\end{equation}
+Heuristic là khoảng cách Manhattan (\ma{mode} $1$) hoặc Euclid (\ma{mode} $2$) trên tọa độ 2D.
+
+\section{Cài đặt}
+\label{sec:t3-cai-dat}
+
+Hàm dựng đồ thị với chi phí \eqref{eq:t3-cost} rồi gọi lõi A*. Sau khi có đường đi,
+$P_{\text{safe}}$ được tích lũy dọc danh sách và ghi vào trường \ma{pSafe} của từng nút, nên nút
+thứ $i$ chứa xác suất an toàn của đoạn đường từ nguồn tới nó (nút đầu bằng $1$, nút cuối là
+$P_{\text{safe}}$ của cả đường).
+
+\begin{khungma}{Algo.cpp (trích findProbabilisticPath)}{C++}
+PathNode* head = toLinkedList(result, graph, indexLabels(result));
+double survival = 1.0;
+PathNode* node = head;
+for (size_t i = 0; i < result.nodes.size(); ++i, node = node->next) {
+    if (i > 0) survival *= 1.0 - riskMatrix[result.nodes[i - 1]][result.nodes[i]];
+    node->pSafe = survival;
+}
+\end{khungma}
+
+Với $\lambda \ge 0$ ta có $c_\lambda(u, v) \ge d(u, v)$, nên nếu $d(u, v)$ không nhỏ hơn khoảng
+cách Euclid giữa hai đầu cung thì $h_E$ nhất quán với \emph{mọi} $\lambda$. Ngược lại, $h_E$ không
+phụ thuộc $\lambda$, nên khi $\lambda$ lớn, phần rủi ro chiếm tỉ trọng lớn trong $g$ và heuristic
+trở nên kém thông tin hơn.
+
+\section{Ảnh hưởng của $\lambda$: phân tích tổng quát}
+\label{sec:t3-ly-thuyet}
+
+Với mỗi đường $P$ đặt $D(P) = \sum d(u, v)$ và $S(P) = \sum P_{\text{risk}}(u, v)$. Khi đó
+$g_\lambda(P) = D(P) + \lambda S(P)$ là hàm \nhanmanh{tuyến tính} theo $\lambda$, và chi phí tối ưu
+$G(\lambda) = \min_P g_\lambda(P)$ là cực tiểu của hữu hạn hàm tuyến tính nên là hàm lõm, tuyến
+tính từng khúc. Mỗi khúc ứng với một đường tối ưu.
+
+\begin{dinhly}[Tính đơn điệu theo $\lambda$]
+  \label{dl:t3-don-dieu}
+  Nếu $P_1$ tối ưu tại $\lambda_1$ và $P_2$ tối ưu tại $\lambda_2 > \lambda_1$ thì
+  $S(P_2) \le S(P_1)$ và $D(P_2) \ge D(P_1)$.
+\end{dinhly}
+
+\begin{loigiai}
+  Từ tính tối ưu: $D_1 + \lambda_1 S_1 \le D_2 + \lambda_1 S_2$ và
+  $D_2 + \lambda_2 S_2 \le D_1 + \lambda_2 S_1$. Cộng hai vế:
+  $(\lambda_2 - \lambda_1)(S_2 - S_1) \le 0$ nên $S_2 \le S_1$. Thay vào bất đẳng thức thứ nhất:
+  $D_1 - D_2 \le \lambda_1 (S_2 - S_1) \le 0$, tức $D_1 \le D_2$.
+\end{loigiai}
+
+Nghĩa là khi tăng $\lambda$, lời giải chỉ có thể chuyển sang đường \nhanmanh{dài hơn nhưng ít rủi
+ro hơn}, không bao giờ quay ngược lại. Giữa hai đường $A$ (ngắn, rủi ro) và $B$ (dài, an toàn),
+điểm chuyển là
+\begin{equation}
+  \NoiBat{\lambda^\ast = \frac{D(B) - D(A)}{S(A) - S(B)}}.
+  \label{eq:t3-nguong}
+\end{equation}
+Ngoài ra $1 - P_{\text{safe}} \le S$ (bất đẳng thức hợp) và $P_{\text{safe}} \approx e^{-S}$ khi
+các xác suất nhỏ, nên giảm $S$ cũng làm tăng $P_{\text{safe}}$.
+
+\section{Ví dụ tính toán}
+\label{sec:t3-vi-du}
+
+Xét 4 điểm $0(0,0)$, $1(5,0)$, $2(5,4)$, $3(10,0)$ với đường ngắn $A = 0 \to 1 \to 3$ có
+$d = 5 + 5$, mỗi cung rủi ro $0{,}5$, và đường an toàn $B = 0 \to 2 \to 3$ có $d = 7 + 7$, rủi ro
+$0$ (\Hinh{fig:t3-vi-du}).
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[x=0.9cm, y=0.9cm]
+    \node[dinh] (a) at (0, 0) {0};
+    \node[dinhduong] (b) at (5, 0) {1};
+    \node[dinh] (c) at (5, 4) {2};
+    \node[dinh] (d) at (10, 0) {3};
+    \draw[line width=1.2pt, do] (a) -- node[trongso, below=2pt] {$d = 5,\ P = 0{,}5$} (b);
+    \draw[line width=1.2pt, do] (b) -- node[trongso, below=2pt] {$d = 5,\ P = 0{,}5$} (d);
+    \draw[line width=1.2pt, xanhla] (a) -- node[trongso, above left] {$d = 7,\ P = 0$} (c);
+    \draw[line width=1.2pt, xanhla] (c) -- node[trongso, above right] {$d = 7,\ P = 0$} (d);
+  \end{tikzpicture}
+  \caption{Ví dụ Task 3: đường $A$ (đỏ) ngắn nhưng rủi ro, đường $B$ (xanh) dài nhưng an toàn}
+  \label{fig:t3-vi-du}
+\end{figure}
+
+Ta có $D(A) = 10$, $S(A) = 1$, $P_{\text{safe}}(A) = 0{,}5 \cdot 0{,}5 = 0{,}25$ và
+$D(B) = 14$, $S(B) = 0$, $P_{\text{safe}}(B) = 1$. Do đó
+\[
+  g_\lambda(A) = 10 + \lambda, \qquad g_\lambda(B) = 14, \qquad
+  \lambda^\ast = \frac{14 - 10}{1 - 0} = 4.
+\]
+
+\begin{bangbieu}{Lời giải của chương trình theo $\lambda$ (heuristic Euclid)}{tab:t3-lambda}{C{1.6cm} C{2.6cm} C{2.4cm} C{2.4cm} Y}
+  \hangtieude \thead{$\lambda$} & \thead{Đường đi} & \thead{$g$} & \thead{$P_{\text{safe}}$} & \thead{Nhận xét} \\
+  \midrule
+  0    & $0 \to 1 \to 3$ & 10 & 0,25 & chỉ tính độ dài \\
+  2    & $0 \to 1 \to 3$ & 12 & 0,25 & $10 + 2 < 14$ \\
+  4    & $0 \to 1 \to 3$ & 14 & 0,25 & \onoibat hòa tại $\lambda^\ast$, phá hòa giữ $A$ \\
+  4,01 & $0 \to 2 \to 3$ & 14 & 1    & \otot vượt ngưỡng, chuyển sang $B$ \\
+  6    & $0 \to 2 \to 3$ & 14 & 1    & \\
+  10   & $0 \to 2 \to 3$ & 14 & 1    & \\
+\end{bangbieu}
+
+Vết A* với $\lambda = 6$ (Euclid: $h(0) = 10$, $h(1) = 5$, $h(2) = \sqrt{41} \approx 6{,}403$,
+$h(3) = 0$) cho thấy cơ chế chuyển đường:
+
+\begin{bangbieu}{Vết A* của Task 3, $\lambda = 6$}{tab:t3-vet}{C{1cm} C{4cm} Y}
+  \hangtieude \thead{Vòng} & \thead{Mở rộng $(g; h; f)$} & \thead{Nới lỏng} \\
+  \midrule
+  1 & $0\ (0;\ 10;\ 10)$ & $1$: $g = 5 + 6 \cdot 0{,}5 = 8$, $f = 13$;\ \ $2$: $g = 7$, $f = 13{,}403$ \\
+  2 & $1\ (8;\ 5;\ 13)$ & $3$: $g = 8 + 5 + 3 = 16$, $f = 16$ \\
+  3 & $2\ (7;\ 6{,}403;\ 13{,}403)$ & $3$: $g = 7 + 7 = 14 < 16$, cập nhật $f = 14$ \\
+  4 & $3\ (14;\ 0;\ 14)$ & Đích, dừng: đường $0 \to 2 \to 3$, $P_{\text{safe}} = 1$ \\
+\end{bangbieu}
+
+\section{Thực nghiệm trên lưới có vùng nguy hiểm}
+\label{sec:t3-thuc-nghiem}
+
+Lưới $6 \times 6$ điểm cách nhau 10 đơn vị, mỗi điểm nối với điểm bên phải, bên dưới (độ dài
+$10$--$12$) và chéo dưới phải (độ dài $15$--$16$, luôn $\ge 10\sqrt{2}$ nên $h_E$ nhất quán). Các
+cạnh xuất phát từ vùng $4 \times 4$ bên trong có rủi ro $0{,}05$--$0{,}2$ (cạnh thẳng) hoặc
+$0{,}1$--$0{,}3$ (cạnh chéo); ở viền ngoài rủi ro dưới $0{,}01$. Đi từ góc $0$ tới góc đối diện $35$.
+
+\begin{bangbieu}{Ảnh hưởng của $\lambda$ trên lưới $6\times 6$}{tab:t3-luoi}{C{1.2cm} C{1.6cm} C{1.4cm} C{1.6cm} C{1.8cm} C{1.6cm} Z}
+  \hangtieude \thead{$\lambda$} & \thead{Bước} & \thead{$D$} & \thead{$S$} & \thead{$g$} & \thead{$P_{\text{safe}}$} & \thead{Mở rộng} \\
+  \midrule
+  0   & 5 & 77 & 0,913 & 77,000  & \oxau 0,353 & 10 \\
+  10  & 5 & 77 & 0,913 & 86,133  & \oxau 0,353 & 21 \\
+  25  & 7 & 87 & 0,279 & 93,967  & \onoibat 0,744 & 27 \\
+  50  & 7 & 87 & 0,279 & 100,934 & \onoibat 0,744 & 31 \\
+  100 & 9 & 99 & 0,041 & 103,147 & \otot 0,959 & 28 \\
+  200 & 9 & 99 & 0,041 & 107,294 & \otot 0,959 & 29 \\
+  500 & 9 & 99 & 0,041 & 119,736 & \otot 0,959 & 27 \\
+\end{bangbieu}
+\nguonbang{\ma{make report-data}, hạt giống 99. Ba đường: $A$ cắt chéo qua vùng nguy hiểm, $B$ men
+theo mép vùng, $C$ đi vòng theo viền lưới.}
+
+Áp dụng \eqref{eq:t3-nguong}: $\lambda^\ast_{AB} = (87 - 77)/(0{,}913 - 0{,}279) \approx 15{,}8$ và
+$\lambda^\ast_{BC} = (99 - 87)/(0{,}279 - 0{,}041) \approx 50{,}4$, khớp với bảng: đường đổi giữa
+$\lambda = 10$ và $25$, rồi giữa $50$ và $100$.
+
+\begin{ketqua}[Kết luận về tham số $\lambda$]
+  \begin{itemize}
+    \item $\lambda$ nhỏ: ưu tiên đường ngắn, rủi ro cao ($P_{\text{safe}} = 0{,}35$).
+          $\lambda$ lớn: chấp nhận đi xa hơn $29\%$ để $P_{\text{safe}}$ tăng lên $0{,}96$.
+    \item Lời giải thay đổi theo từng bậc tại các ngưỡng \eqref{eq:t3-nguong}; $D$ không giảm và
+          $S$ không tăng theo $\lambda$, đúng Định lý~\ref{dl:t3-don-dieu}.
+    \item Số đỉnh mở rộng tăng từ 10 lên khoảng 30 khi $\lambda$ tăng, vì $h_E$ chỉ ước lượng phần
+          độ dài, không ước lượng phần rủi ro $\lambda S$.
+  \end{itemize}
+\end{ketqua}
+
+\begin{luuy}[Manhattan ở Task 3]
+  Trên ví dụ 4 điểm, $h_M(2) = 5 + 4 = 9 > h^\ast(2) = 7$ nên Manhattan không chấp nhận được với các
+  cạnh xiên. Với $\lambda = 10$ chế độ này vẫn chọn đúng đường $B$ (đã kiểm thử), nhưng chỉ Euclid được bảo đảm
+  tối ưu khi độ dài cạnh không nhỏ hơn khoảng cách thẳng giữa hai đầu cạnh.
+\end{luuy}

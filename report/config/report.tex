@@ -1,0 +1,25 @@
+% ==============================================================================
+\newcommand{\cu}[1]{\textcolor{xam}{#1\textsuperscript{\,cũ}}}
+% REPORT: KÝ HIỆU VÀ KIỂU VẼ RIÊNG CỦA BÁO CÁO A*
+% ==============================================================================
+\newcommand{\Cpp}{C\texttt{++}}
+\newcommand{\ma}[1]{\texttt{\detokenize{#1}}}
+\newcommand{\OPEN}{\textsc{Open}}
+\DeclareMathOperator{\degr}{deg}
+\DeclareMathOperator{\hops}{hops}
+
+\lstdefinestyle{gia}{style=mauma, language={}, numbers=left, mathescape=true,
+  basicstyle=\ttfamily\small, keywordstyle=\color{matukhoa}\bfseries,
+  morekeywords={function, while, for, each, if, then, else, return, and, or, not, continue}}
+
+\tikzset{
+  dinh/.style={circle, draw=bkxanh, fill=bkxanhnen, line width=0.8pt, minimum size=8mm,
+               font=\small\bfseries},
+  dinhduong/.style={dinh, draw=do, fill=donhat},
+  canh/.style={-{Stealth[length=2mm]}, line width=0.6pt, draw=bkxam},
+  canhduong/.style={canh, draw=do, line width=1.4pt},
+  trongso/.style={font=\scriptsize, fill=white, inner sep=1pt},
+  o/.style={draw=bkxam!60, minimum size=9mm, inner sep=0pt, font=\scriptsize},
+}
+\newcommand{\mz}{\textcolor{xam!60}{$\cdot$}}
+\newcommand{\mo}{\textbf{\textcolor{bkxanh}{1}}}

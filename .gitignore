@@ -6,14 +6,6 @@ dist/
 *.rar
 *.zip
 
-report/*.aux
-report/*.log
-report/*.out
-report/*.toc
-report/*.synctex.gz
-report/*.fdb_latexmk
-report/*.fls
-report/*.xdv
 
 .vscode/
 .idea/

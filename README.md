@@ -17,7 +17,7 @@ LMS CodeRunner standard headers.
 src/        PathNode.{h,cpp}, Algo.{h,cpp}, main.cpp  (submission sources)
 tests/      Self-contained test runner
 docs/       Milestones and design notes
-report/     Report sources
+report/     LaTeX report (template HCMUT_01_Report)
 tools/      Experiment and trace generator used by the report
 scripts/    Header check and submission packaging
 ```
@@ -34,10 +34,20 @@ make report-data  # regenerate traces and benchmarks in docs/report_data.txt
 Sample demo output: [docs/sample_output.txt](docs/sample_output.txt).
 Design decisions and assumptions per task: [docs/DESIGN.md](docs/DESIGN.md).
 
+## Report
+
+The report lives in `report/` and follows the
+[NexoZegknost/LaTeX-Template](https://github.com/NexoZegknost/LaTeX-Template) (`HCMUT_01_Report`).
+Fill `\HoTen` and `\MSSV` at the top of `report/main.tex`, then build with XeLaTeX:
+
+```bash
+cd report && make          # or compile.bat on Windows -> BaoCao.pdf
+```
+
 ## Submission
 
 ```bash
-scripts/package.sh <StudentID>   # needs report/<StudentID>.pdf and the rar tool
+scripts/package.sh <StudentID>   # needs report/BaoCao.pdf and the rar tool
 ```
 
 Produces `dist/<StudentID>.rar` containing `<StudentID>/` with the five source files and the report.
