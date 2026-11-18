@@ -11,7 +11,7 @@ Deadline: **December 6th, 2026**.
 | M4 | Task 3 — Probabilistic hazard routing | `findProbabilisticPath` + tests | Done |
 | M5 | Task 4 — Game multi-terrain grid | `findGamePath` + tests | Done |
 | M6 | Task 5 — PCB wire routing | `findPCBPath` + tests | Done |
-| M7 | Demo and packaging | `main.cpp`, `scripts/package.sh` | Pending |
+| M7 | Demo and packaging | `main.cpp`, `scripts/package.sh` | Done |
 | M8 | Report | `report/<StudentID>.pdf` | Pending |
 
 ## Constraints from the specification

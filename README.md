@@ -29,4 +29,15 @@ make run      # run the demo
 make test     # header check + unit tests
 ```
 
+Sample demo output: [docs/sample_output.txt](docs/sample_output.txt).
+Design decisions and assumptions per task: [docs/DESIGN.md](docs/DESIGN.md).
+
+## Submission
+
+```bash
+scripts/package.sh <StudentID>   # needs report/<StudentID>.pdf and the rar tool
+```
+
+Produces `dist/<StudentID>.rar` containing `<StudentID>/` with the five source files and the report.
+
 See [docs/MILESTONES.md](docs/MILESTONES.md) for progress.
