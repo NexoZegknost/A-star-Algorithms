@@ -33,3 +33,14 @@ heuristic value per vertex) and call `astar::search`.
   returns `nullptr`.
 - The metrics are measured in coordinate units while costs are energy units, so admissibility
   depends on the data; the engine re-opens vertices to remain correct either way.
+
+## Task 3 — Probabilistic hazard routing
+
+- Edge `u → v` exists when `distMatrix[u][v] > 0` and `u ≠ v`.
+- Step cost `d(u, v) + λ · P_risk(u, v)`; `g` is the expected cost accumulated along the path.
+- Heuristic modes: `1` Manhattan, `2` Euclidean on `(x, y)`.
+- `PathNode::pSafe` stores the survival probability `∏ (1 − P_risk)` accumulated from the start
+  up to that node (`1` at the start). The field sits after `next` so the struct still matches the
+  LMS `printPath` and aggregate initialisation of the five required fields.
+- Break-even example used in the tests: a risky route `d = 10`, total risk `1.0` versus a safe route
+  `d = 14`; the safe route wins as soon as `λ > 4`.

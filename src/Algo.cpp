@@ -258,3 +258,34 @@ PathNode* findAUVPath(double weightMatrix[100][100], int coords[100][3],
     if (!result.found) return nullptr;
     return toLinkedList(result, graph, indexLabels(MAX_NODES));
 }
+
+PathNode* findProbabilisticPath(double distMatrix[100][100], double riskMatrix[100][100],
+                                int coords[100][2], int startPoint, int goalPoint,
+                                double lambda, int mode) {
+    using namespace astar;
+    Metric metric = metricFromMode(mode, MANHATTAN, EUCLIDEAN);
+    if (metric == INVALID_METRIC) return nullptr;
+    if (!inRange(startPoint, 0, MAX_NODES) || !inRange(goalPoint, 0, MAX_NODES)) return nullptr;
+
+    Graph graph(MAX_NODES);
+    for (int u = 0; u < MAX_NODES; ++u) {
+        for (int v = 0; v < MAX_NODES; ++v) {
+            if (u == v || distMatrix[u][v] <= 0) continue;
+            graph.addEdge(u, v, distMatrix[u][v] + lambda * riskMatrix[u][v]);
+        }
+        graph.h[u] = distance(metric, coords[u][0] - coords[goalPoint][0],
+                              coords[u][1] - coords[goalPoint][1]);
+    }
+
+    SearchResult result = search(graph, startPoint, goalPoint);
+    if (!result.found) return nullptr;
+
+    PathNode* head = toLinkedList(result, graph, indexLabels(MAX_NODES));
+    double survival = 1.0;
+    PathNode* node = head;
+    for (size_t i = 0; i < result.nodes.size(); ++i, node = node->next) {
+        if (i > 0) survival *= 1.0 - riskMatrix[result.nodes[i - 1]][result.nodes[i]];
+        node->pSafe = survival;
+    }
+    return head;
+}
