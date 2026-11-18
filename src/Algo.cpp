@@ -147,4 +147,72 @@ bool inRange(int value, int low, int high) {
     return value >= low && value < high;
 }
 
+const int MAX_NODES = 100;
+
+std::vector<std::string> indexLabels(int size) {
+    std::vector<std::string> labels(size);
+    for (int i = 0; i < size; ++i) {
+        labels[i] = std::to_string(i);
+    }
+    return labels;
+}
+
+std::vector<int> hopsToGoal(const Graph& graph, int goal) {
+    const int size = graph.size();
+    std::vector<std::vector<int> > reverse(size);
+    for (int u = 0; u < size; ++u) {
+        for (size_t i = 0; i < graph.adj[u].size(); ++i) {
+            reverse[graph.adj[u][i].to].push_back(u);
+        }
+    }
+
+    std::vector<int> hops(size, -1);
+    std::vector<int> queue(1, goal);
+    hops[goal] = 0;
+    for (size_t head = 0; head < queue.size(); ++head) {
+        int v = queue[head];
+        for (size_t i = 0; i < reverse[v].size(); ++i) {
+            int u = reverse[v][i];
+            if (hops[u] == -1) {
+                hops[u] = hops[v] + 1;
+                queue.push_back(u);
+            }
+        }
+    }
+    return hops;
+}
+
+}
+
+PathNode* findMeshPath(double weightMatrix[100][100], int startNode, int goalNode) {
+    using namespace astar;
+    if (!inRange(startNode, 0, MAX_NODES) || !inRange(goalNode, 0, MAX_NODES)) return nullptr;
+
+    std::vector<int> degree(MAX_NODES, 0);
+    for (int u = 0; u < MAX_NODES; ++u) {
+        for (int v = 0; v < MAX_NODES; ++v) {
+            if (u != v && weightMatrix[u][v] > 0) ++degree[u];
+        }
+    }
+
+    Graph graph(MAX_NODES);
+    double minStepCost = INF;
+    for (int u = 0; u < MAX_NODES; ++u) {
+        for (int v = 0; v < MAX_NODES; ++v) {
+            if (u == v || weightMatrix[u][v] <= 0) continue;
+            double cost = weightMatrix[u][v] + 0.1 * degree[v];
+            graph.addEdge(u, v, cost);
+            minStepCost = std::min(minStepCost, cost);
+        }
+    }
+
+    std::vector<int> hops = hopsToGoal(graph, goalNode);
+    if (hops[startNode] == -1) return nullptr;
+    for (int v = 0; v < MAX_NODES; ++v) {
+        graph.h[v] = hops[v] == -1 ? INF : hops[v] * minStepCost;
+    }
+
+    SearchResult result = search(graph, startNode, goalNode);
+    if (!result.found) return nullptr;
+    return toLinkedList(result, graph, indexLabels(MAX_NODES));
 }
